@@ -1,0 +1,45 @@
+{
+  "bulletinDate": "2026-11-23",
+  "worshipOrder": "<İbadet Programı Örneği>\n\n* Açılış İlahisi (Lider: ○○○)\n  1. İlahi Başlığı 1\n  2. İlahi Başlığı 2\n\n* Kutsal Kitap Metni\n  : Kitap, Bölüm, Ayet\n\n* Vaaz\n  : Vaaz Başlığı | Vaizin Adı\n\n* Benediksiyon",
+  "serviceInfo": "Pazar İbadeti : ÖÖ 11:00\nCuma Dua Toplantısı : ÖS 8:00\n(Yönetici panelinde kilise saatlerinizi güncelleyin)",
+  "biblePassage": "1. Kutsal Kitap metnini buraya girin.\n\n2. Ayet numaraları (1. 2. 3.) eklenirse numaralar solda hizalanır.",
+  "bibleHeading": "Kutsal Kitap metni (örn: Yuhanna 3:16)",
+  "sermonTitle": "Vaaz başlığını girin",
+  "preacher": "Baş Papaz",
+  "summary": "1. Vaaz notunu girin.\n\n2. Numara eklenince otomatik hizalanır.",
+  "questions": "1. Paylaşım sorularını girin.\n\n2. Küçük grupta paylaşılacak soruları numaralı yazın.",
+  "churchNews": "1. Yeni üyeleri karşılıyoruz\n  : İlk kez gelenleri yürekten karşılıyoruz.\n\n2. Kilise Haberleri Giriş Örneği\n  : Yönetici'nin 'Kilise Haberleri' alanına numara (1. 2. 3.) ekleyerek yazın, açıklama satırlarını ':' ile başlatın.",
+  "fridayLink": "",
+  "fridayNotice": "",
+  "youtubeLink": "",
+  "dosirakLink": "",
+  "shortsLink": "",
+  "musicSheets": [],
+  "badgeEnabled": {
+    "worship": true,
+    "dosirak": false,
+    "shorts": false,
+    "friday": false
+  },
+  "bulletinHistory": [
+    {
+      "id": 1795431193792,
+      "date": "2026-11-23",
+      "worshipOrder": "<İbadet Programı Örneği>\n\n* Açılış İlahisi (Lider: ○○○)\n  1. İlahi Başlığı 1\n  2. İlahi Başlığı 2\n\n* Kutsal Kitap Metni\n  : Kitap, Bölüm, Ayet\n\n* Vaaz\n  : Vaaz Başlığı | Vaizin Adı\n\n* Benediksiyon",
+      "serviceInfo": "Pazar İbadeti : ÖÖ 11:00\nCuma Dua Toplantısı : ÖS 8:00\n(Yönetici panelinde kilise saatlerinizi güncelleyin)",
+      "biblePassage": "1. Kutsal Kitap metnini buraya girin.\n\n2. Ayet numaraları (1. 2. 3.) eklenirse numaralar solda hizalanır.",
+      "bibleHeading": "Kutsal Kitap metni (örn: Yuhanna 3:16)",
+      "sermonTitle": "Vaaz başlığını girin",
+      "preacher": "Baş Papaz",
+      "summary": "1. Vaaz notunu girin.\n\n2. Numara eklenince otomatik hizalanır.",
+      "questions": "1. Paylaşım sorularını girin.\n\n2. Küçük grupta paylaşılacak soruları numaralı yazın.",
+      "churchNews": "1. Yeni üyeleri karşılıyoruz\n  : İlk kez gelenleri yürekten karşılıyoruz.\n\n2. Kilise Haberleri Giriş Örneği\n  : Yönetici'nin 'Kilise Haberleri' alanına numara (1. 2. 3.) ekleyerek yazın, açıklama satırlarını ':' ile başlatın.",
+      "fridayLink": "",
+      "fridayNotice": "",
+      "youtubeLink": "",
+      "dosirakLink": "",
+      "shortsLink": "",
+      "musicSheets": []
+    }
+  ]
+}

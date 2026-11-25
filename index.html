@@ -1555,10 +1555,22 @@ function saveToStorage(key) {
     console.error("\uB370\uC774\uD130 \uC800\uC7A5 \uC2E4\uD328:", e);
   }
 }
+async function loadBulletinJson() {
+  try {
+    const res = await fetch("bulletin.json?v=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) return;
+    const data = await res.json();
+    const weeklyFields = ["bulletinDate","worshipOrder","serviceInfo","biblePassage","bibleHeading",
+      "sermonTitle","preacher","summary","questions","churchNews","fridayLink","fridayNotice",
+      "youtubeLink","dosirakLink","shortsLink","musicSheets","badgeEnabled","bulletinHistory"];
+    weeklyFields.forEach(k => { if (data[k] !== undefined) store[k] = data[k]; });
+  } catch(e) { console.warn("bulletin.json load failed, using embedded store:", e); }
+}
 async function startBulletin() {
   switchTab("home");
   await bulletinStorage.ready();
   window.isZoomEventInitialized = false;
+  await loadBulletinJson();
   loadStorage();
   initValues();
   switchTab("home");

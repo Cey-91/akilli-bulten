@@ -216,6 +216,10 @@ self.addEventListener("fetch", (event) => {
     })());
     return;
   }
+  if (url.pathname.endsWith("bulletin.json")) {
+    event.respondWith(fetch(request, { cache: "no-store" }).catch(() => new Response("{}", { headers: { "Content-Type": "application/json" } })));
+    return;
+  }
   if (!ASSETS.includes(url.href) && !EXTERNAL.has(url.hostname)) return;
   const network = fetch(request, { cache: "no-cache" }).then(async (r) => {
     if (r.ok || r.type === "opaque") await save(request, r);

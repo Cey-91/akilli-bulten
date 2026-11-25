@@ -11,3 +11,6 @@
   Cache-Control: no-store, max-age=0
 /manifest.json
   Cache-Control: no-cache, max-age=0
+/bulletin.json
+  Cache-Control: no-store, max-age=0
+  Access-Control-Allow-Origin: *
