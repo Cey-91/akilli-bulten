@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bülten Yönetici Paneli</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #F0F4F8; min-height: 100vh; }
+
+  /* 로그인 화면 */
+  #loginScreen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 20px;
+  }
+  .login-box {
+    background: #fff; border-radius: 20px; padding: 40px 32px;
+    width: 100%; max-width: 380px;
+    box-shadow: 0 4px 24px rgba(30,31,75,0.10);
+    text-align: center;
+  }
+  .login-box .icon { font-size: 48px; margin-bottom: 12px; }
+  .login-box h1 { font-size: 22px; color: #1E1F4B; font-weight: 700; margin-bottom: 6px; }
+  .login-box p { font-size: 14px; color: #718096; margin-bottom: 28px; }
+  .login-box input {
+    width: 100%; padding: 14px 16px; border: 2px solid #E2E8F0;
+    border-radius: 12px; font-size: 16px; outline: none;
+    transition: border-color .2s; margin-bottom: 12px;
+  }
+  .login-box input:focus { border-color: #1E1F4B; }
+  .login-box button {
+    width: 100%; padding: 14px; background: #1E1F4B; color: #fff;
+    border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: opacity .2s;
+  }
+  .login-box button:hover { opacity: 0.85; }
+  .login-error { color: #E52D27; font-size: 13px; margin-top: 8px; display: none; }
+
+  /* 메인 편집 화면 */
+  #adminScreen { display: none; padding: 0 0 80px; }
+  .top-bar {
+    background: #1E1F4B; color: #fff; padding: 16px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .top-bar h1 { font-size: 17px; font-weight: 700; }
+  .top-bar .logout-btn {
+    background: rgba(255,255,255,0.15); border: none; color: #fff;
+    padding: 6px 14px; border-radius: 20px; font-size: 13px;
+    cursor: pointer; font-weight: 600;
+  }
+
+  .content { max-width: 680px; margin: 0 auto; padding: 20px 16px; }
+
+  .section {
+    background: #fff; border-radius: 16px; padding: 20px;
+    margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .section-title {
+    font-size: 13px; font-weight: 700; color: #4A5568;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 1px solid #EDF2F7;
+  }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block; font-size: 13px; font-weight: 600;
+    color: #2D3748; margin-bottom: 6px;
+  }
+  .field label .badge {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 10px; margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge-weekly { background: #EBF4FF; color: #2B6CB0; }
+  .badge-fixed  { background: #F0FFF4; color: #276749; }
+
+  .field input[type="text"],
+  .field input[type="date"],
+  .field input[type="url"],
+  .field textarea {
+    width: 100%; padding: 10px 13px; border: 1.5px solid #E2E8F0;
+    border-radius: 10px; font-size: 14px; line-height: 1.6;
+    outline: none; transition: border-color .2s;
+    font-family: inherit; resize: vertical;
+  }
+  .field input:focus, .field textarea:focus { border-color: #1E1F4B; }
+  .field textarea { min-height: 100px; }
+  .field textarea.tall { min-height: 160px; }
+
+  .badge-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .badge-toggle {
+    display: flex; align-items: center; gap: 8px;
+    background: #F7FAFC; border: 1.5px solid #E2E8F0;
+    border-radius: 10px; padding: 8px 14px; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: #4A5568;
+    transition: all .15s; user-select: none;
+  }
+  .badge-toggle.active { background: #EBF4FF; border-color: #90CDF4; color: #2B6CB0; }
+  .badge-toggle input { display: none; }
+
+  /* 저장 버튼 */
+  .save-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #fff; border-top: 1px solid #E2E8F0;
+    padding: 12px 16px; z-index: 100;
+  }
+  .save-bar .inner { max-width: 680px; margin: 0 auto; }
+  .save-btn {
+    width: 100%; padding: 15px; background: #E52D27; color: #fff;
+    border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: opacity .2s; display: flex;
+    align-items: center; justify-content: center; gap: 8px;
+  }
+  .save-btn:hover { opacity: 0.88; }
+  .save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* 토스트 알림 */
+  #toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: #1E1F4B; color: #fff; padding: 12px 24px;
+    border-radius: 20px; font-size: 14px; font-weight: 600;
+    opacity: 0; transition: opacity .3s; pointer-events: none;
+    white-space: nowrap; z-index: 200;
+  }
+  #toast.show { opacity: 1; }
+  #toast.error { background: #E52D27; }
+
+  /* 설정 패널 */
+  .config-section { border-left: 3px solid #48BB78; }
+  .weekly-section { border-left: 3px solid #4299E1; }
+  .link-section { border-left: 3px solid #E52D27; }
+</style>
+</head>
+<body>
+
+<!-- 로그인 화면 -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="icon">⛪</div>
+    <h1>Bülten Yönetici Paneli</h1>
+    <p>주보 관리자 로그인</p>
+    <input type="password" id="pwInput" placeholder="비밀번호 입력" autocomplete="current-password">
+    <button onclick="doLogin()">로그인</button>
+    <div class="login-error" id="loginError">비밀번호가 틀렸습니다.</div>
+  </div>
+</div>
+
+<!-- 관리자 화면 -->
+<div id="adminScreen">
+  <div class="top-bar">
+    <h1>⛪ 주보 관리자</h1>
+    <button class="logout-btn" onclick="doLogout()">로그아웃</button>
+  </div>
+
+  <div class="content">
+
+    <!-- 이번 주 주보 -->
+    <div class="section weekly-section">
+      <div class="section-title">📅 이번 주 주보 기본 정보</div>
+
+      <div class="field">
+        <label>주보 날짜 <span class="badge badge-weekly">매주</span></label>
+        <input type="date" id="f_bulletinDate">
+      </div>
+      <div class="field">
+        <label>예배 순서 <span class="badge badge-weekly">매주</span></label>
+        <textarea id="f_worshipOrder" class="tall" placeholder="예배 순서를 입력하세요..."></textarea>
+      </div>
+      <div class="field">
+        <label>예배 시간 안내 <span class="badge badge-fixed">고정</span></label>
+        <textarea id="f_serviceInfo" placeholder="주일예배 : 오전 11:00&#10;금요기도회 : 오후 8:00"></textarea>
+      </div>
+    </div>
+
+    <!-- 설교 -->
+    <div class="section weekly-section">
+      <div class="section-title">📖 설교</div>
+
+      <div class="field">
+        <label>성경 본문 제목 <span class="badge badge-weekly">매주</span></label>
+        <input type="text" id="f_bibleHeading" placeholder="예: 요한복음 3:16">
+      </div>
+      <div class="field">
+        <label>성경 본문 내용 <span class="badge badge-weekly">매주</span></label>
+        <textarea id="f_biblePassage" class="tall" placeholder="성경 본문을 입력하세요..."></textarea>
+      </div>
+      <div class="field">
+        <label>설교 제목 <span class="badge badge-weekly">매주</span></label>
+        <input type="text" id="f_sermonTitle" placeholder="설교 제목">
+      </div>
+      <div class="field">
+        <label>설교자 <span class="badge badge-weekly">매주</span></label>
+        <input type="text" id="f_preacher" placeholder="담임목사">
+      </div>
+      <div class="field">
+        <label>설교 요약 <span class="badge badge-weekly">매주</span></label>
+        <textarea id="f_summary" class="tall" placeholder="설교 노트 / 요약을 입력하세요..."></textarea>
+      </div>
+      <div class="field">
+        <label>나눔 질문 <span class="badge badge-weekly">매주</span></label>
+        <textarea id="f_questions" placeholder="소그룹 나눔 질문을 입력하세요..."></textarea>
+      </div>
+    </div>
+
+    <!-- 교회 소식 -->
+    <div class="section weekly-section">
+      <div class="section-title">📢 교회 소식</div>
+      <div class="field">
+        <label>교회 소식 <span class="badge badge-weekly">매주</span></label>
+        <textarea id="f_churchNews" class="tall" placeholder="교회 소식을 입력하세요...&#10;1. 소식 제목&#10;  : 내용 설명"></textarea>
+      </div>
+    </div>
+
+    <!-- 링크 -->
+    <div class="section link-section">
+      <div class="section-title">🔗 링크 & 뱃지</div>
+
+      <div class="field">
+        <label>유튜브 링크</label>
+        <input type="url" id="f_youtubeLink" placeholder="https://youtube.com/...">
+      </div>
+      <div class="field">
+        <label>도시락(식사) 링크</label>
+        <input type="url" id="f_dosirakLink" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label>Shorts 링크</label>
+        <input type="url" id="f_shortsLink" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label>금요일 링크</label>
+        <input type="url" id="f_fridayLink" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label>금요일 안내 문구</label>
+        <input type="text" id="f_fridayNotice" placeholder="예: 금요 기도회 링크">
+      </div>
+
+      <div class="field">
+        <label>NEW 뱃지 활성화</label>
+        <div class="badge-row">
+          <label class="badge-toggle" id="badge_worship">
+            <input type="checkbox" id="f_badge_worship">⛪ 예배
+          </label>
+          <label class="badge-toggle" id="badge_dosirak">
+            <input type="checkbox" id="f_badge_dosirak">🍱 도시락
+          </label>
+          <label class="badge-toggle" id="badge_shorts">
+            <input type="checkbox" id="f_badge_shorts">📱 Shorts
+          </label>
+          <label class="badge-toggle" id="badge_friday">
+            <input type="checkbox" id="f_badge_friday">🙏 금요일
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- GitHub 설정 -->
+    <div class="section config-section">
+      <div class="section-title">⚙️ GitHub 연동 설정</div>
+      <div class="field">
+        <label>GitHub Personal Access Token</label>
+        <input type="password" id="cfg_token" placeholder="ghp_..." autocomplete="off">
+        <small style="color:#718096;font-size:12px;margin-top:4px;display:block">
+          한 번 입력하면 이 기기에 저장됩니다. repo 권한 필요.
+        </small>
+      </div>
+      <div class="field">
+        <label>관리자 비밀번호 변경</label>
+        <input type="password" id="cfg_newPw" placeholder="새 비밀번호 입력" autocomplete="new-password">
+        <button onclick="changeAdminPw()" style="margin-top:8px;padding:8px 16px;background:#4A5568;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">비밀번호 변경</button>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /adminScreen -->
+
+<!-- 저장 버튼 -->
+<div class="save-bar" id="saveBar" style="display:none">
+  <div class="inner">
+    <button class="save-btn" id="saveBtn" onclick="saveBulletin()">
+      <span>💾</span> 주보 저장 & 발행
+    </button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── 설정 ───────────────────────────────────────────────
+const GITHUB_OWNER = "Cey-91";
+const GITHUB_REPO  = "akilli-bulten";
+const GITHUB_FILE  = "bulletin.json";
+const GITHUB_BRANCH = "main";
+const ADMIN_PW_KEY = "admin_panel_pw";
+const TOKEN_KEY    = "admin_panel_token";
+
+// ── 로그인 ─────────────────────────────────────────────
+function getAdminPw() {
+  return localStorage.getItem(ADMIN_PW_KEY) || "admin1234";
+}
+function doLogin() {
+  const pw = document.getElementById("pwInput").value;
+  if (pw === getAdminPw()) {
+    sessionStorage.setItem("admin_authed", "1");
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("adminScreen").style.display = "block";
+    document.getElementById("saveBar").style.display = "block";
+    loadData();
+    // 저장된 토큰 복원
+    const tok = localStorage.getItem(TOKEN_KEY);
+    if (tok) document.getElementById("cfg_token").value = tok;
+  } else {
+    document.getElementById("loginError").style.display = "block";
+  }
+}
+document.getElementById("pwInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") doLogin();
+});
+function doLogout() {
+  sessionStorage.removeItem("admin_authed");
+  document.getElementById("adminScreen").style.display = "none";
+  document.getElementById("saveBar").style.display = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+  document.getElementById("pwInput").value = "";
+}
+function changeAdminPw() {
+  const np = document.getElementById("cfg_newPw").value.trim();
+  if (!np) { showToast("비밀번호를 입력하세요", true); return; }
+  localStorage.setItem(ADMIN_PW_KEY, np);
+  document.getElementById("cfg_newPw").value = "";
+  showToast("비밀번호가 변경됐습니다 ✅");
+}
+// 세션 유지 체크
+if (sessionStorage.getItem("admin_authed") === "1") {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("adminScreen").style.display = "block";
+  document.getElementById("saveBar").style.display = "block";
+  window.addEventListener("DOMContentLoaded", () => {
+    loadData();
+    const tok = localStorage.getItem(TOKEN_KEY);
+    if (tok) document.getElementById("cfg_token").value = tok;
+  });
+}
+
+// ── 뱃지 토글 ─────────────────────────────────────────
+["worship","dosirak","shorts","friday"].forEach(type => {
+  const cb = document.getElementById("f_badge_" + type);
+  const lbl = document.getElementById("badge_" + type);
+  cb.addEventListener("change", () => {
+    lbl.classList.toggle("active", cb.checked);
+  });
+});
+
+// ── bulletin.json 로드 ────────────────────────────────
+async function loadData() {
+  try {
+    const res = await fetch("/bulletin.json?v=" + Date.now());
+    if (!res.ok) throw new Error("fetch failed");
+    const d = await res.json();
+    setFields(d);
+  } catch(e) {
+    showToast("데이터 로드 실패: " + e.message, true);
+  }
+}
+
+function setFields(d) {
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.type === "checkbox") el.checked = !!val;
+    else el.value = val || "";
+  };
+  set("f_bulletinDate", d.bulletinDate || "");
+  set("f_worshipOrder", d.worshipOrder || "");
+  set("f_serviceInfo",  d.serviceInfo  || "");
+  set("f_bibleHeading", d.bibleHeading || "");
+  set("f_biblePassage", d.biblePassage || "");
+  set("f_sermonTitle",  d.sermonTitle  || "");
+  set("f_preacher",     d.preacher     || "");
+  set("f_summary",      d.summary      || "");
+  set("f_questions",    d.questions    || "");
+  set("f_churchNews",   d.churchNews   || "");
+  set("f_fridayLink",   d.fridayLink   || "");
+  set("f_fridayNotice", d.fridayNotice || "");
+  set("f_youtubeLink",  d.youtubeLink  || "");
+  set("f_dosirakLink",  d.dosirakLink  || "");
+  set("f_shortsLink",   d.shortsLink   || "");
+
+  const be = d.badgeEnabled || {};
+  ["worship","dosirak","shorts","friday"].forEach(t => {
+    const cb = document.getElementById("f_badge_" + t);
+    const lbl = document.getElementById("badge_" + t);
+    if (cb) { cb.checked = !!be[t]; lbl.classList.toggle("active", !!be[t]); }
+  });
+
+  window._currentBulletin = d;
+}
+
+// ── 저장 & GitHub push ────────────────────────────────
+async function saveBulletin() {
+  const token = document.getElementById("cfg_token").value.trim();
+  if (!token) {
+    showToast("⚙️ 먼저 GitHub Token을 입력하세요", true);
+    document.getElementById("cfg_token").focus();
+    return;
+  }
+  localStorage.setItem(TOKEN_KEY, token);
+
+  const btn = document.getElementById("saveBtn");
+  btn.disabled = true;
+  btn.innerHTML = "<span>⏳</span> 저장 중...";
+
+  const prev = window._currentBulletin || {};
+  const bulletinDate = document.getElementById("f_bulletinDate").value;
+  const newId = Date.now();
+
+  // bulletinHistory 업데이트
+  const history = Array.isArray(prev.bulletinHistory) ? [...prev.bulletinHistory] : [];
+  const thisWeek = {
+    id: newId,
+    date: bulletinDate,
+    worshipOrder: document.getElementById("f_worshipOrder").value,
+    serviceInfo:  document.getElementById("f_serviceInfo").value,
+    biblePassage: document.getElementById("f_biblePassage").value,
+    bibleHeading: document.getElementById("f_bibleHeading").value,
+    sermonTitle:  document.getElementById("f_sermonTitle").value,
+    preacher:     document.getElementById("f_preacher").value,
+    summary:      document.getElementById("f_summary").value,
+    questions:    document.getElementById("f_questions").value,
+    churchNews:   document.getElementById("f_churchNews").value,
+    fridayLink:   document.getElementById("f_fridayLink").value,
+    fridayNotice: document.getElementById("f_fridayNotice").value,
+    youtubeLink:  document.getElementById("f_youtubeLink").value,
+    musicSheets:  prev.musicSheets || []
+  };
+  // 같은 날짜면 교체, 아니면 앞에 추가
+  const existIdx = history.findIndex(h => h.date === bulletinDate);
+  if (existIdx >= 0) history[existIdx] = thisWeek;
+  else history.unshift(thisWeek);
+
+  const newData = {
+    bulletinDate,
+    worshipOrder: document.getElementById("f_worshipOrder").value,
+    serviceInfo:  document.getElementById("f_serviceInfo").value,
+    biblePassage: document.getElementById("f_biblePassage").value,
+    bibleHeading: document.getElementById("f_bibleHeading").value,
+    sermonTitle:  document.getElementById("f_sermonTitle").value,
+    preacher:     document.getElementById("f_preacher").value,
+    summary:      document.getElementById("f_summary").value,
+    questions:    document.getElementById("f_questions").value,
+    churchNews:   document.getElementById("f_churchNews").value,
+    fridayLink:   document.getElementById("f_fridayLink").value,
+    fridayNotice: document.getElementById("f_fridayNotice").value,
+    youtubeLink:  document.getElementById("f_youtubeLink").value,
+    dosirakLink:  document.getElementById("f_dosirakLink").value,
+    shortsLink:   document.getElementById("f_shortsLink").value,
+    musicSheets:  prev.musicSheets || [],
+    badgeEnabled: {
+      worship: document.getElementById("f_badge_worship").checked,
+      dosirak: document.getElementById("f_badge_dosirak").checked,
+      shorts:  document.getElementById("f_badge_shorts").checked,
+      friday:  document.getElementById("f_badge_friday").checked
+    },
+    bulletinHistory: history
+  };
+
+  try {
+    // 현재 파일의 SHA 가져오기
+    const metaRes = await fetch(
+      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE}?ref=${GITHUB_BRANCH}`,
+      { headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" } }
+    );
+    if (!metaRes.ok) throw new Error("GitHub API 오류: " + metaRes.status);
+    const meta = await metaRes.json();
+
+    // 내용 업데이트
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(newData, null, 2))));
+    const pushRes = await fetch(
+      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`,
+      {
+        method: "PUT",
+        headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: `주보 업데이트: ${bulletinDate}`,
+          content,
+          sha: meta.sha,
+          branch: GITHUB_BRANCH
+        })
+      }
+    );
+    if (!pushRes.ok) {
+      const err = await pushRes.json();
+      throw new Error(err.message || pushRes.status);
+    }
+
+    window._currentBulletin = newData;
+    showToast("✅ 발행 완료! 1~2분 후 반영됩니다");
+  } catch(e) {
+    showToast("❌ 저장 실패: " + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "<span>💾</span> 주보 저장 & 발행";
+  }
+}
+
+// ── 토스트 ─────────────────────────────────────────────
+function showToast(msg, isError = false) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "show" + (isError ? " error" : "");
+  setTimeout(() => t.className = "", 3000);
+}
+</script>
+</body>
+</html>
