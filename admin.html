@@ -477,8 +477,12 @@ async function saveBulletin() {
     if (!metaRes.ok) throw new Error("GitHub API 오류: " + metaRes.status);
     const meta = await metaRes.json();
 
-    // 내용 업데이트
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(newData, null, 2))));
+    // 내용 업데이트 (UTF-8 safe base64 — btoa()는 한글/터키어 깨짐)
+    const jsonStr = JSON.stringify(newData, null, 2);
+    const bytes = new TextEncoder().encode(jsonStr);
+    let binary = "";
+    bytes.forEach(b => binary += String.fromCharCode(b));
+    const content = btoa(binary);
     const pushRes = await fetch(
       `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`,
       {

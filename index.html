@@ -1570,8 +1570,8 @@ async function startBulletin() {
   switchTab("home");
   await bulletinStorage.ready();
   window.isZoomEventInitialized = false;
-  await loadBulletinJson();
   loadStorage();
+  await loadBulletinJson(); // bulletin.json이 localStorage보다 최종 우선권
   initValues();
   switchTab("home");
   setTimeout(logVisitor, 0);
