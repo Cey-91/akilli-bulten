@@ -681,12 +681,7 @@ html[data-skin] .badge-new{top:-7px;right:10px}
                         <i class="fa-solid fa-moon"></i>
                         <span class="lv-txt"><span id="fridayBtnText">Cuma Dua Toplantısı</span><small>Canlı · Tekrar İzle</small></span>
                     </button>
-                    <button class="home-square-btn dosirak-color" id="dosirakBtn" onclick="openLiveLink('dosirakLink')">
-                        <div class="badge-new" id="dosirakBadge" style="display: none;">NEW</div>
-                        <i class="fa-solid fa-video"></i>
-                        <span class="lv-txt"><span>Günlük Kelam</span><small>Günlük İncil Meditasyonu</small></span>
-                    </button>
-                    <button class="home-square-btn worship-color" id="bibleReadBtn" onclick="window.open('https://kutsalkitap.org', '_blank', 'noopener')">
+                    <button class="home-square-btn dosirak-color" id="kutsalKitapBtn" onclick="window.open('https://kutsalkitap.org', '_blank', 'noopener')">
                         <i class="fa-solid fa-book-open"></i>
                         <span class="lv-txt"><span>Kutsal Kitap</span><small>kutsalkitap.org</small></span>
                     </button>
@@ -697,6 +692,11 @@ html[data-skin] .badge-new{top:-7px;right:10px}
                     </button>
                 </div>
             </div>
+
+            <button class="home-wide-btn" id="instagramWideBtn" style="display:none" onclick="void 0">
+                <i class="fa-brands fa-instagram"></i>
+                <span id="instagramWideText">Instagram</span>
+            </button>
 
             <div class="card" id="worshipOrderCard" style="display: none;">
                 <div class="card-header"><i class="fa-solid fa-list-check"></i> İbadet Programı</div>
@@ -1846,17 +1846,17 @@ function updateViews() {
     fridayBtn.style.display = "flex";
     document.getElementById("fridayBtnText").innerText = "Cuma Dua Toplantısı";
   }
-  // Günlük Kelam 버튼 → 인스타그램 링크로 대체 (instagramId가 있을 때)
-  const igBtn = document.getElementById("dosirakBtn");
-  if (igBtn && store.instagramId) {
-    const igId = String(store.instagramId).replace(/^@/, "").trim();
-    const icon = igBtn.querySelector("i");
-    if (icon) icon.className = "fa-brands fa-instagram";
-    const title = igBtn.querySelector(".lv-txt > span");
-    if (title) title.innerText = "Instagram";
-    const sm = igBtn.querySelector(".lv-txt small");
-    if (sm) sm.innerText = "@" + igId;
-    igBtn.onclick = () => window.open("https://www.instagram.com/" + encodeURIComponent(igId) + "/", "_blank", "noopener");
+  // 인스타그램 가로 버튼 (instagramId가 있을 때만 표시)
+  const igWide = document.getElementById("instagramWideBtn");
+  if (igWide) {
+    const igId = String(store.instagramId || "").replace(/^@/, "").trim();
+    if (igId) {
+      igWide.style.display = "";
+      document.getElementById("instagramWideText").innerText = "Instagram · @" + igId;
+      igWide.onclick = () => window.open("https://www.instagram.com/" + encodeURIComponent(igId) + "/", "_blank", "noopener");
+    } else {
+      igWide.style.display = "none";
+    }
   }
   const logoImg = document.getElementById("mainAppLogo");
   if (store.logoData) {
