@@ -15,8 +15,7 @@
   "dosirakLink": "",
   "shortsLink": "",
   "musicSheets": [],
-  "instagramId": "",
-  "adminPassword": "admin1234",
+  "instagramId": "https://www.instagram.com/cigligorkemkilisesi?gwpx=bDZwdHk2anZiamNn",
   "badgeEnabled": {
     "worship": true,
     "dosirak": false,
@@ -25,7 +24,7 @@
   },
   "bulletinHistory": [
     {
-      "id": 1795804917151,
+      "id": 1795810170400,
       "date": "2026-11-22",
       "worshipOrder": "<İbadet Programı Örneği>\n\n* Açılış İlahisi (Lider: Ceyhun)\n  1. İlahi Başlığı 1\n  2. İlahi Başlığı 2\n\n* Kutsal Kitap Metni\n  : Kitap, Bölüm, Ayet\n\n* Vaaz\n  : Vaaz Başlığı | Vaizin Adı : Kerim\n\n* Benediksiyon",
       "serviceInfo": "Pazar İbadeti : ÖS 12:00\nSalı Dua Toplantısı : ÖS 11:00\n(Yönetici panelinde kilise saatlerinizi güncelleyin)\nCuma Kilisenin Temizilik : ÖS 10:30",
@@ -60,5 +59,6 @@
       "shortsLink": "",
       "musicSheets": []
     }
-  ]
+  ],
+  "adminPassword": "admin1234"
 }
