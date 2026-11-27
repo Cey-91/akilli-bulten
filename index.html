@@ -1847,15 +1847,15 @@ function updateViews() {
     fridayBtn.style.display = "flex";
     document.getElementById("fridayBtnText").innerText = "Cuma Dua Toplantısı";
   }
-  // 금요 버튼 → 인스타그램 링크로 대체 (instagramId가 있을 때)
-  const igBtn = document.getElementById("fridayLiveBtn");
+  // Günlük Kelam 버튼 → 인스타그램 링크로 대체 (instagramId가 있을 때)
+  const igBtn = document.getElementById("dosirakBtn");
   if (igBtn && store.instagramId) {
     const igId = String(store.instagramId).replace(/^@/, "").trim();
-    igBtn.style.display = "flex";
     const icon = igBtn.querySelector("i");
     if (icon) icon.className = "fa-brands fa-instagram";
-    document.getElementById("fridayBtnText").innerText = "Instagram";
-    const sm = igBtn.querySelector("small");
+    const title = igBtn.querySelector(".lv-txt > span");
+    if (title) title.innerText = "Instagram";
+    const sm = igBtn.querySelector(".lv-txt small");
     if (sm) sm.innerText = "@" + igId;
     igBtn.onclick = () => window.open("https://www.instagram.com/" + encodeURIComponent(igId) + "/", "_blank", "noopener");
   }
