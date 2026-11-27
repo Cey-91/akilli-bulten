@@ -857,6 +857,7 @@ html[data-skin="a"] .card-header{font-family:var(--serif)}
             <div class="card">
                 <div class="card-header"><i class="fa-solid fa-book-open"></i> Sessiz Zaman — Günlük Okuma</div>
                 <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6;">Her gün bir bölüm okuyun. ✓ işaretleyerek tamamlayın, meditasyon notunuzu yazın.</p>
+                <div id="sz-calendar" style="margin-bottom:16px;"></div>
                 <div id="sessiz-zaman-list" style="display:flex;flex-direction:column;gap:4px;">
                 </div>
             </div>
@@ -2202,6 +2203,8 @@ const SESSIZ_ZAMAN_PLAN = (function() {
       tarih.setDate(BASLANGIC.getDate() + idx);
       plan.push({
         idx,
+        kitapAd: kitap.ad,
+        bolumNo: b,
         bolum: kitap.ad + " " + b,
         tarih,
         tarihStr: tarih.getFullYear() + "-" + String(tarih.getMonth()+1).padStart(2,"0") + "-" + String(tarih.getDate()).padStart(2,"0")
@@ -2279,7 +2282,97 @@ function saveSessizNote(tarihStr, val) {
   saveSessizZamanData(data);
 }
 
+// Sessiz Zaman takvimi: her gün için okunacak bölüm ve İncil metni bağlantısı
+const SZ_BOOK_INFO = {
+  "Matta": { en: "Matthew", kisa: "Mat" },
+  "Markos": { en: "Mark", kisa: "Mar" },
+  "Luka": { en: "Luke", kisa: "Luk" },
+  "Yuhanna": { en: "John", kisa: "Yuh" },
+  "Elçilerin İşleri": { en: "Acts", kisa: "Elç" },
+  "Romalılar": { en: "Romans", kisa: "Rom" },
+  "1. Korintliler": { en: "1Corinthians", kisa: "1Ko" },
+  "2. Korintliler": { en: "2Corinthians", kisa: "2Ko" },
+  "Galatyalılar": { en: "Galatians", kisa: "Gal" },
+  "Efesliler": { en: "Ephesians", kisa: "Efe" },
+  "Filipililere": { en: "Philippians", kisa: "Fil" },
+  "Koloseliler": { en: "Colossians", kisa: "Kol" },
+  "Vahiy": { en: "Revelation", kisa: "Vah" }
+};
+function szBibleUrl(item) {
+  const info = SZ_BOOK_INFO[item.kitapAd];
+  if (!info) return "";
+  return "https://www.bibleserver.com/TR/" + info.en + item.bolumNo;
+}
+let szCalMonth = null;
+function szCalDateStr(d) {
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+function changeSzMonth(delta) {
+  szCalMonth = new Date(szCalMonth.getFullYear(), szCalMonth.getMonth() + delta, 1);
+  renderSessizCalendar();
+}
+function renderSessizCalendar() {
+  const box = document.getElementById("sz-calendar");
+  if (!box || !SESSIZ_ZAMAN_PLAN.length) return;
+  const now = new Date();
+  if (!szCalMonth) szCalMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const todayStr = szCalDateStr(now);
+  const planMap = {};
+  SESSIZ_ZAMAN_PLAN.forEach(p => { planMap[p.tarihStr] = p; });
+  const firstPlan = SESSIZ_ZAMAN_PLAN[0].tarih;
+  const lastPlan = SESSIZ_ZAMAN_PLAN[SESSIZ_ZAMAN_PLAN.length - 1].tarih;
+  const minMonth = new Date(firstPlan.getFullYear(), firstPlan.getMonth(), 1);
+  const maxMonth = new Date(lastPlan.getFullYear(), lastPlan.getMonth(), 1);
+  const y = szCalMonth.getFullYear(), m = szCalMonth.getMonth();
+  const monthNames = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+  const dayNames = ["Pt","Sa","Ça","Pe","Cu","Ct","Pz"];
+  const offset = (new Date(y, m, 1).getDay() + 6) % 7; // Pazartesi başlangıç
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const data = getSessizZamanData();
+  const canPrev = szCalMonth > minMonth;
+  const canNext = szCalMonth < maxMonth;
+  const navBtn = (enabled, delta, icon) => `<button onclick="changeSzMonth(${delta})" ${enabled ? "" : "disabled"} style="border:none;background:${enabled ? 'var(--primary-navy)' : '#E2E8F0'};color:${enabled ? '#fff' : '#A0AEC0'};width:34px;height:34px;border-radius:50%;cursor:${enabled ? 'pointer' : 'default'};"><i class="fa-solid ${icon}"></i></button>`;
+
+  let cells = "";
+  for (let i = 0; i < offset; i++) cells += `<div></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dt = new Date(y, m, d);
+    const key = szCalDateStr(dt);
+    const item = planMap[key];
+    const isToday = key === todayStr;
+    const checked = !!(data[key] && data[key].checked);
+    let bg = "#fff", border = "1px solid var(--border-color)", color = "var(--primary-navy)";
+    if (checked) { bg = "rgba(104,211,145,0.12)"; border = "1px solid #68D391"; }
+    if (isToday) { border = "2px solid var(--point-red)"; }
+    if (item) {
+      const info = SZ_BOOK_INFO[item.kitapAd] || { kisa: item.kitapAd };
+      cells += `<button onclick="window.open('${szBibleUrl(item)}','_blank','noopener')" title="${item.bolum} — Oku" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:52px;padding:4px 2px;border-radius:10px;background:${bg};border:${border};cursor:pointer;color:${color};">
+        <span style="font-size:13px;font-weight:800;${isToday ? 'color:var(--point-red);' : ''}">${d}</span>
+        <span style="font-size:9.5px;font-weight:700;color:${checked ? '#2D7A4F' : 'var(--text-muted)'};line-height:1.1;text-align:center;">${info.kisa} ${item.bolumNo}</span>
+        ${isToday ? '<span style="font-size:8px;font-weight:800;color:var(--point-red);">BUGÜN</span>' : ''}
+      </button>`;
+    } else {
+      cells += `<div style="display:flex;align-items:center;justify-content:center;min-height:52px;border-radius:10px;font-size:13px;color:#CBD5E0;">${d}</div>`;
+    }
+  }
+
+  box.innerHTML = `<div style="background:#fff;border:1px solid var(--border-color);border-radius:14px;padding:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      ${navBtn(canPrev, -1, "fa-chevron-left")}
+      <div style="font-weight:800;font-size:15px;color:var(--primary-navy);">${monthNames[m]} ${y}</div>
+      ${navBtn(canNext, 1, "fa-chevron-right")}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;">
+      ${dayNames.map(n => `<div style="text-align:center;font-size:11px;font-weight:700;color:var(--text-muted);">${n}</div>`).join("")}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">${cells}</div>
+    <p style="font-size:11px;color:var(--text-muted);margin:10px 0 0;line-height:1.5;">Tarihe dokunarak o günün Kutsal Kitap bölümünü açın.</p>
+  </div>`;
+}
+
 function openSessizZaman() {
+  szCalMonth = null;
+  renderSessizCalendar();
   renderSessizZamanList();
   switchTab('sessiz-zaman');
 }
