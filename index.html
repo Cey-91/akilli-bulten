@@ -66,7 +66,7 @@
       if (Number(event.data.version.split(":")[0]) < Number(current.split(":")[0])) return;
       if (event.data.version !== current) reload(event.data.version, false);
       else if (navigator.onLine) (_b = document.getElementById("bulletinConnectionNotice")) == null ? void 0 : _b.remove();
-    } else if (((_c = event.data) == null ? void 0 : _c.type) === "BULLETIN_DOWNLOADING") notice("\u27F3 \uC0C8 Bülten\uB97C indiriliyor\uC785\uB2C8\uB2E4");
+    } else if (((_c = event.data) == null ? void 0 : _c.type) === "BULLETIN_DOWNLOADING") notice("\u27F3 Yeni bülten indiriliyor");
     else if (((_d = event.data) == null ? void 0 : _d.type) === "BULLETIN_OFFLINE") notice("Bağlantı zayıf; kayıtlı bülten gösteriliyor. Bağlantı gelince güncellenir.");
   });
   const EXPECTED_WORKER = "20261103-fastopen-5";
@@ -120,7 +120,7 @@
     check(true);
     heal(r);
   }).catch(() => {
-    if (!navigator.onLine) notice("\uC624\uD504\uB77C\uC778 \uC0C1\uD0DC\uC785\uB2C8\uB2E4. \uC778\uD130\uB137 \uC5F0\uACB0 \uD6C4 \uB2E4:00 \uC5F4\uC5B4 \uC8FC\uC138\uC694.");
+    if (!navigator.onLine) notice("Çevrimdışısınız. İnternet bağlantısını kurup tekrar açın.");
   });
   document.addEventListener("input", () => {
     dirty = true;
@@ -131,9 +131,9 @@
   document.addEventListener("visibilitychange", () => check(false));
   setInterval(() => check(false), 3e5);
   document.addEventListener("DOMContentLoaded", () => {
-    if (!navigator.onLine) notice("\uC624\uD504\uB77C\uC778 \uC0C1\uD0DC\uC785\uB2C8\uB2E4. \uC800\uC7A5\uB41C Bülten\uB97C \uD45C\uC2DC\uD569\uB2C8\uB2E4.");
+    if (!navigator.onLine) notice("Çevrimdışısınız. Kayıtlı bülten gösteriliyor.");
     setTimeout(() => {
-      if (!window.bulletinAppReady) notice("Bülten \uD654\uBA74\uC744 \uC900\uBE44\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4. \uC5F0\uACB0\uC744 \uD655\uC778\uD55C \uB4A4 \uB2E4:00 \uC5F4\uC5B4 \uC8FC\uC138\uC694.", () => location.reload());
+      if (!window.bulletinAppReady) notice("Bülten ekranı hazırlanamadı. Bağlantıyı kontrol edip tekrar açın.", () => location.reload());
     }, 12e3);
   }, { once: true });
 })();
@@ -1523,7 +1523,7 @@ function loadStorage() {
   store.bulletinHistory.sort((a, b) => parseDateSafe(b.date) - parseDateSafe(a.date));
   if (!Array.isArray(store.musicSheets)) store.musicSheets = [];
   if (!Array.isArray(store.confessions)) store.confessions = [];
-  if (!Array.isArray(store.mokjangs)) store.mokjangs = ["\uC0AC\uB791. Grup", "\uBBFF\uC74C\uBAA9\uC7A5", "\uC18C\uB9DD\uBAA9\uC7A5"];
+  if (!Array.isArray(store.mokjangs)) store.mokjangs = ["Sevgi Grubu", "İman Grubu", "Umut Grubu"];
   if (!Array.isArray(store.cellShares)) store.cellShares = [];
   if (!Array.isArray(store.cellRequests)) store.cellRequests = [];
   if (!store.specialRecord || typeof store.specialRecord !== "object") store.specialRecord = { ...SPECIAL_DEFAULT };
@@ -1563,7 +1563,7 @@ function loadStorage() {
   }
 }
 function deleteCellItem(type, id) {
-  if (!confirm("\uC0AD\uC81C\uD558:00\uACA0\uC2B5\uB2C8\uAE4C?")) return;
+  if (!confirm("Silmek istiyor musunuz?")) return;
   if (type === "share") {
     store.cellShares = store.cellShares.filter((i) => i.id !== id);
     saveToStorage("cellShares");
@@ -1582,7 +1582,7 @@ function saveToStorage(key) {
       bulletinStorage.setItem("dasibon_" + key, store[key]);
     }
   } catch (e) {
-    console.error("\uB370\uC774\uD130 \uC800\uC7A5 \uC2E4\uD328:", e);
+    console.error("Veri kaydedilemedi:", e);
   }
 }
 async function loadBulletinJson() {
@@ -1677,8 +1677,8 @@ function sendToGoogleSheet(payload) {
   const url = (store.globalWebhook || "").trim();
   if (!url) return Promise.resolve("skipped");
   return postToSheet(url, payload).then(() => "sent").catch((e) => {
-    console.error("\uAD6C\uAE00 \uC2DC\uD2B8 \uC5F0\uB3D9 \uC804\uC1A1 \uC5D0\uB7EC:", e);
-    if (payload.type === "\uC811\uC18D\uC790") return "failed";
+    console.error("Google Sheets gönderim hatası:", e);
+    if (payload.type === "접속자") return "failed";
     const list = readSheetOutbox();
     list.push({ url, payload, at: Date.now() });
     writeSheetOutbox(list);
@@ -1686,12 +1686,12 @@ function sendToGoogleSheet(payload) {
   });
 }
 function resetWebhookURL() {
-  if (confirm("\uC774 \uAE30\uAE30\uC5D0 \uAE30\uC5B5\uB41C \uACFC\uAC70\uC758 \uAD6C\uAE00 \uC5F0\uB3D9 \uC8FC\uC18C \uCE90\uC2DC\uB97C \uC644\uC804\uD788 \uC0AD\uC81C\uD558:00\uACA0\uC2B5\uB2C8\uAE4C?\n\uC0AD\uC81C \uD6C4 \uD604\uC7AC \uC18C\uC2A4\uCF54\uB4DC\uC5D0 \uC0BD\uC785\uB418\uC5B4 Dağıtım\uB41C \uC815\uC2DD \uC8FC\uC18C\uB85C \uAC15\uC81C \uB3D9\uAE30\uD654 \uB9AC\uC14B\uB429\uB2C8\uB2E4.")) {
+  if (confirm("Bu cihazdaki eski Google bağlantı önbelleği tamamen silinsin mi?\nSilindikten sonra güncel adresle yeniden eşitlenir.")) {
     bulletinStorage.removeItem("dasibon_globalWebhook");
     store.globalWebhook = "";
     document.getElementById("input-globalWebhook").value = "";
     saveToStorage("globalWebhook");
-    alert("\uAE30\uAE30 \uCE90\uC2DC\uAC00 \uC815\uD654\uB418\uC5C8\uC2B5\uB2C8\uB2E4. Bülten\uB97C \uB2E4:00 \uAC00\uB3D9\uD569\uB2C8\uB2E4.");
+    alert("Cihaz önbelleği temizlendi. Bülten yeniden başlatılıyor.");
     location.reload();
   }
 }
@@ -1705,10 +1705,10 @@ function logVisitor() {
   const ss = String(now.getSeconds()).padStart(2, "0");
   const timeStr = "".concat(yyyy, "-").concat(mm, "-").concat(dd, " ").concat(hh, ":").concat(min, ":").concat(ss);
   sendToGoogleSheet({
-    type: "\uC811\uC18D\uC790",
+    type: "접속자",
     date: timeStr,
-    bulletinDate: store.bulletinDate || "\uC624\uB298 \uB0A0\uC9DC",
-    content: "\uC131\uB3C4 Akıllı Bülten \uC811\uC18D \uC5F4\uB78C (LocalStorage \uB3D9\uAE30\uD654 \uC644\uB8CC)"
+    bulletinDate: store.bulletinDate || "Bugünün tarihi",
+    content: "Cemaat Akıllı Bülten erişimi (LocalStorage eşitlendi)"
   });
 }
 function splitBible(data) {
@@ -1804,7 +1804,7 @@ function applyChurchInfo() {
   const lg = document.getElementById("mainAppLogo");
   if (lg) lg.alt = name;
   const bt = document.getElementById("homeSiteBtn"), tx = document.getElementById("homeSiteText");
-  if (tx) tx.textContent = name + " Ana Sayfa\uD398\uC774\uC9C0 \uBC29\uBB38";
+  if (tx) tx.textContent = name + " Ana Sayfa'yı ziyaret et";
   const has = !!String(store.homepageLink || "").trim();
   if (bt) bt.style.display = has ? "" : "none";
   const hb = document.getElementById("hubSiteBtn"), hs = document.getElementById("hubSiteSmall");
@@ -2003,14 +2003,14 @@ function selectPastBulletin(id) {
   updateViews();
   renderMusicSheets();
   switchTab("home");
-  alert("[".concat(found.date, "] \uC544\uCE74\uC774\uBE0C Bülten \uB370\uC774\uD130\uAC00 \uC5F0\uB3D9\uB418\uC5C8\uC2B5\uB2C8\uB2E4."));
+  alert("[".concat(found.date, "] Arşiv bülten verisi yüklendi."));
 }
 function exitHistoryMode() {
   window.currentSheetsExpired = false;
   isHistoryView = false;
   loadStorage();
   initValues();
-  alert("\uCD5C\uC2E0 Bülten \uD654\uBA74\uC73C\uB85C \uB3CC\uC544\uC654\uC2B5\uB2C8\uB2E4.");
+  alert("Güncel bülten ekranına dönüldü.");
 }
 function submitCellRequest() {
   const m = document.getElementById("cellMokjangSelect").value;
@@ -2025,22 +2025,22 @@ function submitCellRequest() {
   const cHour = document.getElementById("customVisHour").value;
   const cMinute = document.getElementById("customVisMinute").value;
   if (!cDate) {
-    alert("\uD76C\uB9DD\uD558:00\uB294 \uC2EC\uBC29/\uC591\uC721 \uB0A0\uC9DC\uB97C \uB2EC\uB825\uC5D0\uC11C \uD130\uCE58\uD574 \uC9C0\uC815\uD574 \uC8FC\uC138\uC694.");
+    alert("Lütfen takvimden görüşme/eğitim tarihini seçin.");
     return;
   }
-  const formatTimeStr = "".concat(cAmpm, " ").concat(cHour, "\uC2DC ").concat(cMinute, "\uBD84");
-  const integratedText = "[\uC131\uB3C4 \uD76C\uB9DD\uC77C\uC815: ".concat(cDate, " (").concat(formatTimeStr, ")]\n").concat(text);
+  const formatTimeStr = "".concat(cAmpm, " ").concat(cHour, ":").concat(cMinute);
+  const integratedText = "[Cemaat istek tarihi: ".concat(cDate, " (").concat(formatTimeStr, ")]\n").concat(text);
   const slotId = "CUSTOM_" + Date.now();
   const now = /* @__PURE__ */ new Date();
   const dateStr = store.bulletinDate ? store.bulletinDate : "".concat(now.getFullYear(), "-").concat(String(now.getMonth() + 1).padStart(2, "0"), "-").concat(String(now.getDate()).padStart(2, "0"));
   store.cellRequests.unshift({ id: Date.now(), mokjang: m, author, text: integratedText, visibility: "all", date: dateStr, slotId });
   saveToStorage("cellRequests");
   sendToGoogleSheet({
-    type: "\uC2EC\uBC29\uC591\uC721\uC2E0\uCCAD",
+    type: "심방양육신청",
     mokjang: m,
     author,
     text: integratedText,
-    \uACF5\uC720\uC5EC\uBD80: "\uC804\uCCB4 \uACF5\uC720",
+    "공유여부": "전체 공유",
     date: dateStr
   });
   document.getElementById("input-cellRequestAuthor").value = "";
@@ -2100,10 +2100,10 @@ function downloadDeploymentFile() {
   a.click();
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(a.href), 1e3);
-  alert("Yeni dağıtım dosyası başarıyla oluşturuldu! \uC11C\uBC84\uC5D0 \uC62C\uB9AC\uC2DC\uBA74 \uC131\uB3C4\uB2D8\uB4E4 \uC2A4\uB9C8\uD2B8\uD3F0 \uD654\uBA74\uC774 \uAE54\uB054\uD558\uAC8C \uC989\uAC01 \uAC31\uC2E0\uB429\uB2C8\uB2E4.");
+  alert("Yeni dağıtım dosyası başarıyla oluşturuldu! Sunucuya yüklediğinizde cemaatin telefon ekranları hemen güncellenir.");
 }
 function createNewBulletin() {
-  if (!confirm("\uACFC\uAC70 \uC544\uCE74\uC774\uBE0C \uBCF4\uAD00 \uAE30\uB85D\uC740 \uADF8\uB300\uB85C \uC720\uC9C0\uB429\uB2C8\uB2E4.\n\uB2E4\uB9CC \uD604\uC7AC \uC791\uC131 \uC911\uC778 \uC774\uBC88 \uC8FC Bülten \uB0B4\uC6A9\uB4E4\uC744 \uCD08\uAE30\uD654\uD558\uACE0 \uC0C8\uB86D\uAC8C \uC791\uC131\uC744 \uC2DC\uC791\uD558:00\uACA0\uC2B5\uB2C8\uAE4C?")) return;
+  if (!confirm("Geçmiş arşiv kayıtları korunur.\nAncak bu hafta yazılmakta olan bülten içeriği sıfırlanıp yeniden başlatılsın mı?")) return;
   store.worshipOrder = "";
   store.bulletinDate = "";
   store.biblePassage = "";
@@ -2137,7 +2137,7 @@ function createNewBulletin() {
   keysToReset.forEach((key) => saveToStorage(key));
   isHistoryView = false;
   initValues();
-  alert("\uD604\uC7AC \uC785\uB825\uCC3D \uB9AC\uC14B\uC774 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uACE0\uC815 \uB9C1\uD06C\uB97C \uC81C\uC678\uD55C \uC0C8\uB85C\uC6B4 Bülten \uD3B8\uC131\uC744 \uC2DC\uC791\uD574 \uC8FC\uC138\uC694.");
+  alert("Giriş alanları sıfırlandı. Sabit bağlantılar dışında yeni bülten düzenine başlayabilirsiniz.");
   switchTab("home");
 }
 function uploadLogoImage(input) {
@@ -2158,7 +2158,7 @@ function uploadLogoImage(input) {
   reader.readAsDataURL(input.files[0]);
 }
 function resetLogoImage() {
-  if (confirm("\uB85C\uACE0 \uC124\uC815\uC744 \uCD08\uAE30 \uC0C1\uD0DC\uB85C \uB3CC\uB9AC\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?")) {
+  if (confirm("Logo ayarları ilk duruma döndürülsün mü?")) {
     store.logoData = "";
     saveToStorage("logoData");
     const logoImg = document.getElementById("mainAppLogo");
@@ -2197,7 +2197,7 @@ const SESSIZ_ZAMAN_PLAN = (function() {
     { ad: "Koloseliler", bolumSayisi: 4, baslangic: 1 },
     { ad: "Vahiy", bolumSayisi: 22, baslangic: 1 }
   ];
-  // 시작일: 2026-11-24 = index 0
+  // Başlangıç: 2026-11-24 = index 0
   const BASLANGIC = new Date(2026, 10, 24); // ay 0-indexed: 10 = Kasım
   const plan = [];
   let idx = 0;
@@ -2230,7 +2230,7 @@ function renderSessizZamanList() {
   const data = getSessizZamanData();
   const today = new Date();
   const todayStr = today.getFullYear() + "-" + String(today.getMonth()+1).padStart(2,"0") + "-" + String(today.getDate()).padStart(2,"0");
-  // 오늘 포함 앞뒤 15일만 표시 (너무 길면 오늘 중심으로)
+  // Bugün dahil önceki ve sonraki 15 gün gösterilir
   const todayIdx = SESSIZ_ZAMAN_PLAN.findIndex(p => p.tarihStr === todayStr);
   const startIdx = Math.max(0, todayIdx - 7);
   const visible = SESSIZ_ZAMAN_PLAN.slice(startIdx, startIdx + 30);
@@ -2263,7 +2263,7 @@ function renderSessizZamanList() {
     </div>`;
   }).join('');
 
-  // 오늘로 스크롤
+  // Bugüne kaydır
   setTimeout(() => {
     const todayEl = document.getElementById('sz-item-' + todayStr);
     if (todayEl) todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2303,7 +2303,7 @@ function toggleAdmin() {
   if (!isAdminMode) {
     const password = prompt("Yönetici şifresini girin:");
     if (password !== (store.adminPassword || "admin1234")) {
-      alert("Şifre yanlış. \uB2E4:00 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+      alert("Şifre yanlış. Lütfen tekrar kontrol edin.");
       return;
     }
   }
@@ -2311,8 +2311,8 @@ function toggleAdmin() {
   const app = document.getElementById("dasibonApp");
   if (isAdminMode) {
     app.classList.add("is-admin");
-    document.getElementById("adminBtn").innerHTML = '<i class="fa-solid fa-user"></i> \uC0AC\uC6A9\uC790 \uBAA8\uB4DC';
-    alert("Yönetici\uAC00 \uD65C\uC131\uD654\uB418\uC5C8\uC2B5\uB2C8\uB2E4.");
+    document.getElementById("adminBtn").innerHTML = '<i class="fa-solid fa-user"></i> Kullanıcı modu';
+    alert("Yönetici modu etkinleştirildi.");
   } else {
     app.classList.remove("is-admin");
     document.getElementById("adminBtn").innerHTML = '<i class="fa-solid fa-user"></i> Yönetici';
@@ -2327,7 +2327,7 @@ function saveCurrentToHistory() {
   const defaultDateStr = "".concat(now.getFullYear(), "-").concat(String(now.getMonth() + 1).padStart(2, "0"), "-").concat(String(now.getDate()).padStart(2, "0"));
   const dateStr = store.bulletinDate || defaultDateStr;
   if (store.bulletinHistory.some((item) => item.date === dateStr)) {
-    if (!confirm("[".concat(dateStr, "] Bülten \uC774\uB825\uC774 \uC774\uBBF8 \uC874\uC7AC\uD569\uB2C8\uB2E4. \uD604\uC7AC \uC218\uC815\uD55C \uB0B4\uC6A9\uC73C\uB85C \uB36E\uC5B4\uC4F0\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"))) return;
+    if (!confirm("[".concat(dateStr, "] Bülten kaydı zaten var. Düzenlenen içerikle üzerine yazılsın mı?"))) return;
     store.bulletinHistory = store.bulletinHistory.filter((item) => item.date !== dateStr);
   }
   store.bulletinHistory.unshift({
@@ -2356,7 +2356,7 @@ function saveCurrentToHistory() {
 }
 function deletePastBulletin(id, event) {
   event.stopPropagation();
-  if (confirm("\uC774 Bülten \uBCF4\uAD00 \uC774\uB825\uC744 \uC544\uCE74\uC774\uBE0C\uC5D0\uC11C \uC0AD\uC81C\uD558:00\uACA0\uC2B5\uB2C8\uAE4C?")) {
+  if (confirm("Bu bülten arşiv kaydı silinsin mi?")) {
     store.bulletinHistory = store.bulletinHistory.filter((item) => item.id !== id);
     saveToStorage("bulletinHistory");
     renderBulletinHistoryList();
@@ -2385,7 +2385,7 @@ function saveConfession() {
   renderConfessions();
   const cleanBible = splitBible(store).heading;
   sendToGoogleSheet({
-    type: "\uB9C8\uB4DC\uACE0",
+    type: "마드고",
     author,
     grace,
     prayer,
@@ -2402,13 +2402,13 @@ function renderConfessions() {
   const container = document.getElementById("myConfessionList");
   if (!container) return;
   if (store.confessions.length === 0) {
-    container.innerHTML = '<p style="text-align:center; padding:20px; color:#a0aec0; font-size:12px;">\uAE30\uB85D\uB41C \uACE0\uBC31\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.</p>';
+    container.innerHTML = '<p style="text-align:center; padding:20px; color:#a0aec0; font-size:12px;">Kayıtlı itiraf yok.</p>';
     return;
   }
-  container.innerHTML = store.confessions.map((c, idx) => '\n            <div class="item-row">\n                <div class="row-author">'.concat(escapeHtml(c.author), " (").concat(escapeHtml(c.date), ')</div>\n                <div class="row-content"><b>\uC740\uD61C:</b> ').concat(escapeHtml(c.grace), "</div>\n                ").concat(c.prayer ? '<div class="row-content" style="margin-top:6px;"><b>\uAE30\uB3C4:</b> '.concat(escapeHtml(c.prayer), "</div>") : "", '\n                <button onclick="deleteConfession(').concat(idx, ')" class="delete-btn" style="display:inline-flex; position:absolute; top:10px; right:10px; width:24px; height:24px; font-size:10px;">&times;</button>\n            </div>\n        ')).join("");
+  container.innerHTML = store.confessions.map((c, idx) => '\n            <div class="item-row">\n                <div class="row-author">'.concat(escapeHtml(c.author), " (").concat(escapeHtml(c.date), ')</div>\n                <div class="row-content"><b>Lütuf:</b> ').concat(escapeHtml(c.grace), "</div>\n                ").concat(c.prayer ? '<div class="row-content" style="margin-top:6px;"><b>Dua:</b> '.concat(escapeHtml(c.prayer), "</div>") : "", '\n                <button onclick="deleteConfession(').concat(idx, ')" class="delete-btn" style="display:inline-flex; position:absolute; top:10px; right:10px; width:24px; height:24px; font-size:10px;">&times;</button>\n            </div>\n        ')).join("");
 }
 function deleteConfession(idx) {
-  if (confirm("\uC774 \uACE0\uBC31\uC744 \uC0AD\uC81C\uD558:00\uACA0\uC2B5\uB2C8\uAE4C?")) {
+  if (confirm("Bu itiraf silinsin mi?")) {
     store.confessions.splice(idx, 1);
     saveToStorage("confessions");
     renderConfessions();
@@ -2466,7 +2466,7 @@ function renderMusicSheets() {
   const area = document.getElementById("musicSheetArea");
   if (!area) return;
   if (store.musicSheets.length === 0) {
-    area.innerHTML = isHistoryView && window.currentSheetsExpired ? '<p style="text-align:center; color:#a0aec0; padding:20px; font-size:13px; line-height:1.6;">\uC774 Bülten\uC758 İlahiler\uB294 \uC815\uB9AC\uB418\uC5C8\uC2B5\uB2C8\uB2E4 (\uCD5C\uADFC \uC608\uBC30 2\uAC1C\uB9CC \uBCF4\uAD00).<br>Kutsal Kitap Metni\uACFC Vaaz Notu\uB294 \uADF8\uB300\uB85C \uBCF4\uC2E4 \uC218 \uC788\uC2B5\uB2C8\uB2E4.</p>' : '<p style="text-align:center; color:#a0aec0; padding:20px; font-size:13px;">\uB4F1\uB85D\uB41C İlahiler\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.</p>';
+    area.innerHTML = isHistoryView && window.currentSheetsExpired ? '<p style="text-align:center; color:#a0aec0; padding:20px; font-size:13px; line-height:1.6;">Bu bültenin İlahileri temizlendi (son 2 ibadet saklanır).<br>Kutsal Kitap Metin ve Vaaz Notu olduğu gibi görüntülenebilir.</p>' : '<p style="text-align:center; color:#a0aec0; padding:20px; font-size:13px;">Kayıtlı ilahi yok.</p>';
     return;
   }
   area.innerHTML = store.musicSheets.map((src, idx) => {
@@ -2539,7 +2539,7 @@ async function renderPdfPages(el) {
   }
 }
 function deleteMusicSheet(idx) {
-  if (confirm("İlahiler\uB97C \uC0AD\uC81C\uD558:00\uACA0\uC2B5\uB2C8\uAE4C?")) {
+  if (confirm("İlahileri silmek istiyor musunuz?")) {
     store.musicSheets.splice(idx, 1);
     saveToStorage("musicSheets");
     renderMusicSheets();
@@ -2571,7 +2571,7 @@ function addMokjang() {
 function deleteSelectedMokjang() {
   const current = document.getElementById("cellMokjangSelect").value;
   if (!current) return;
-  if (confirm("[".concat(current, "]\uC744 \uC0AD\uC81C\uD558:00\uACA0\uC2B5\uB2C8\uAE4C?"))) {
+  if (confirm("[".concat(current, "] silinsin mi?"))) {
     store.mokjangs = store.mokjangs.filter((m) => m !== current);
     saveToStorage("mokjangs");
     renderMokjangSelect();
@@ -2584,7 +2584,7 @@ function submitCellShare() {
   const text = document.getElementById("input-cellShareText").value.trim();
   const visibility = "all";
   if (!author || !text) {
-    alert("İsim\uACFC \uB0B4\uC6A9\uC744 \uBAA8\uB450 \uAE30\uC785\uD574 \uC8FC\uC138\uC694.");
+    alert("Ad ve içeriği eksiksiz girin.");
     return;
   }
   const now = /* @__PURE__ */ new Date();
@@ -2592,11 +2592,11 @@ function submitCellShare() {
   store.cellShares.unshift({ id: Date.now(), mokjang: m, author, text, visibility, date: dateStr });
   saveToStorage("cellShares");
   sendToGoogleSheet({
-    type: "\uBAA9\uC7A5\uB098\uB214",
+    type: "목장나눔",
     mokjang: m,
     author,
     text,
-    \uACF5\uC720\uC5EC\uBD80: "\uC804\uCCB4 \uACF5\uC720",
+    "공유여부": "전체 공유",
     date: dateStr
   });
   document.getElementById("input-cellShareAuthor").value = "";
@@ -2610,10 +2610,10 @@ function renderCellShareList() {
   if (!area) return;
   const filtered = store.cellShares.filter((i) => i.mokjang === m);
   if (filtered.length === 0) {
-    area.innerHTML = '<p style="text-align:center; padding:10px; color:#cbd5e0; font-size:12px;">\uB098\uB214\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.</p>';
+    area.innerHTML = '<p style="text-align:center; padding:10px; color:#cbd5e0; font-size:12px;">Paylaşım yok.</p>';
     return;
   }
-  area.innerHTML = filtered.map((i) => '\n            <div class="item-row">\n                <div class="row-author">'.concat(escapeHtml(i.author), '</div><div class="row-content">').concat(escapeHtml(i.text), "</div>\n                <button onclick=\"deleteCellItem('share', ").concat(i.id, ')" aria-label="\uC774 Küçük Grup \uAE00 \uC0AD\uC81C" title="\uAE00 \uC0AD\uC81C" class="delete-btn" style="display:inline-flex; position:absolute; top:12px; right:12px; width:22px; height:22px; font-size:10px;">&times;</button>\n            </div>\n        ')).join("");
+  area.innerHTML = filtered.map((i) => '\n            <div class="item-row">\n                <div class="row-author">'.concat(escapeHtml(i.author), '</div><div class="row-content">').concat(escapeHtml(i.text), "</div>\n                <button onclick=\"deleteCellItem('share', ").concat(i.id, ')" aria-label="Bu Küçük Grup yazısını sil" title="Yazıyı sil" class="delete-btn" style="display:inline-flex; position:absolute; top:12px; right:12px; width:22px; height:22px; font-size:10px;">&times;</button>\n            </div>\n        ')).join("");
 }
 function renderCellRequestList() {
   const m = document.getElementById("cellMokjangSelect").value;
@@ -2621,7 +2621,7 @@ function renderCellRequestList() {
   if (!area) return;
   const filtered = store.cellRequests.filter((i) => i.mokjang === m);
   if (filtered.length === 0) {
-    area.innerHTML = '<p style="text-align:center; padding:10px; color:#cbd5e0; font-size:12px;">\uC2E0\uCCAD \uB0B4\uC5ED\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.</p>';
+    area.innerHTML = '<p style="text-align:center; padding:10px; color:#cbd5e0; font-size:12px;">Talep kaydı yok.</p>';
     return;
   }
   area.innerHTML = filtered.map((i) => '\n            <div class="item-row">\n                <div class="row-author">'.concat(escapeHtml(i.author), '</div><div class="row-content">').concat(escapeHtml(i.text), "</div>\n                <button onclick=\"deleteCellItem('request', ").concat(i.id, ')" class="delete-btn" style="display:').concat(isAdminMode ? "inline-flex" : "none", '; position:absolute; top:12px; right:12px; width:22px; height:22px; font-size:10px;">&times;</button>\n            </div>\n        ')).join("");
@@ -2662,7 +2662,7 @@ function updateViewerContent() {
   zoomScale = 1;
   currentX = 0;
   currentY = 0;
-  document.getElementById("viewerGuide").innerText = "".concat(currentViewerIdx + 1, " / ").concat(total, " \xB7 \uC606\uC73C\uB85C \uB118\uAE30\uBA74 \uB2E4\uC74C İlahiler\uAC00 \uBCF4\uC785\uB2C8\uB2E4.");
+  document.getElementById("viewerGuide").innerText = "".concat(currentViewerIdx + 1, " / ").concat(total, " \xB7 Kaydırarak sonraki ilahileri görebilirsiniz.");
   document.querySelector(".prev-btn").style.display = total > 1 ? "flex" : "none";
   document.querySelector(".next-btn").style.display = total > 1 ? "flex" : "none";
 }
@@ -2672,7 +2672,7 @@ function downloadViewerImage(event) {
   if (!src) return;
   const a = document.createElement("a");
   a.href = src;
-  a.download = "\uCC2C\uC591İlahiler_" + Date.now() + ".jpg";
+  a.download = "Ilahi_" + Date.now() + ".jpg";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -2771,48 +2771,48 @@ function specialPreset(name) {
   const y = (/* @__PURE__ */ new Date()).getFullYear();
   if (name === "harvest") {
     const hints = {
-      1: "\uC0C8\uD574\uB97C \uC2DC\uC791\uD558\uBA70 \uBD99\uB4DC\uC2E0 Vaaz\uACFC \uC740\uD61C",
-      2: "\uC774 \uB2EC\uC5D0 \uC9C0\uCF1C \uC8FC\uC2E0 \uC77C\uACFC \uC751\uB2F5\uBC1B\uC740 \uAE30\uB3C4",
-      3: "\uC0C8 \uD559\uAE30\xB7\uC0C8 \uC77C\uD130\xB7\uC0C8 \uACC4\uC808\uC5D0 \uD568\uAED8\uD558\uC2E0 \uD558\uB098\uB2D8",
-      4: "\uBD80\uD65C\uC758 \uC18C\uB9DD \uAC00\uC6B4\uB370 \uB204\uB9B0 \uC740\uD61C",
-      5: "\uAC00\uC815\uACFC \uAD00\uACC4 \uC18D\uC5D0\uC11C \uBC1B\uC740 \uC0AC\uB791\uACFC \uC740\uD61C",
-      6: "\uC774 \uB2EC\uC5D0 \uC9C0\uCF1C \uC8FC\uC2E0 \uC77C\uACFC \uC751\uB2F5\uBC1B\uC740 \uAE30\uB3C4",
-      7: "\uBB34\uB354\uC704\uC640 \uBD84\uC8FC\uD568 \uC18D\uC5D0\uC11C \uBD99\uB4DC\uC2E0 \uC190\uAE38",
-      8: "\uC27C\uACFC \uD68C\uBCF5\uC758 \uC2DC\uAC04\uC5D0 \uC8FC\uC2E0 \uC740\uD61C",
-      9: "\uC774 \uB2EC\uC5D0 \uC9C0\uCF1C \uC8FC\uC2E0 \uC77C\uACFC \uC751\uB2F5\uBC1B\uC740 \uAE30\uB3C4",
-      10: "\uC5F4\uB9E4\uB97C \uAC70\uB450\uBA70 \uB3CC\uC544\uBCF8 \uD558\uB098\uB2D8\uC758 \uC2E0\uC2E4\uD558\uC2EC",
-      11: "Hasat Şükranı\uB97C \uC55E\uB450\uACE0 \uACE0\uBC31\uD558\uB294 \uAC10\uC0AC"
+      1: "Yeni yılda tutunduğunuz Vaaz ve lütuf",
+      2: "Bu ay korunduğunuz anlar ve yanıt bulan dualar",
+      3: "Yeni dönem, yeni iş ve yeni mevsimde yanınızda olan Tanrı",
+      4: "Diriliş umudu içinde tattığınız lütuf",
+      5: "Aile ve ilişkilerde aldığınız sevgi ve lütuf",
+      6: "Bu ay korunduğunuz anlar ve yanıt bulan dualar",
+      7: "Sıcak ve yoğun günlerde sizi tutan el",
+      8: "Dinlenme ve iyileşme zamanında verilen lütuf",
+      9: "Bu ay korunduğunuz anlar ve yanıt bulan dualar",
+      10: "Meyve toplarken fark edilen Tanrı'nın sadakati",
+      11: "Hasat Şükranı öncesi itiraf edilen şükran"
     };
     const items = [];
-    for (let m = 1; m <= 11; m++) items.push("".concat(m, "\uC6D4 | ").concat(hints[m], ", \uACE0\uB9C8\uC6B4 \uC0AC\uB78C\uC744 \uC801\uC5B4 \uC8FC\uC138\uC694"));
-    items.push("\uD55C \uD574\uB97C \uB3CC\uC544\uBCF4\uB294 \uAC10\uC0AC \uACE0\uBC31 | \uC62C\uD574 \uAC00\uC7A5 \uAC10\uC0AC\uD55C \uD55C \uAC00\uC9C0\uC640 \uD558\uB098\uB2D8\uAED8 \uB4DC\uB9AC\uB294 \uACE0\uBC31");
+    for (let m = 1; m <= 11; m++) items.push("".concat(m, "Ay | ").concat(hints[m], ", Minnettar olduğunuz kişiyi yazın"));
+    items.push("Yılı gözden geçiren şükran itirafı | Bu yılın en çok şükrettiğiniz şeyi ve Tanrı'ya itirafınızı yazın");
     return {
-      title: "".concat(y, " Hasat Şükranı \uC740\uD61C \uAE30\uB85D"),
+      title: "".concat(y, " Hasat Şükranı Lütuf Kaydı"),
       navLabel: "Şükran",
       icon: "fa-wheat-awn",
       deadline: thirdSundayOfNovember(y),
-      intro: "\uC62C \uD55C \uD574 \uC6B0\uB9AC \uC0B6\uC5D0 \uD5C8\uB77D\uD558\uC2E0 \uD558\uB098\uB2D8\uC758 \uC740\uD61C\uB97C \uB2EC\uB9C8\uB2E4 \uB5A0\uC62C\uB9AC\uBA70 \uAE30\uB85D\uD574 \uBD05:00\uB2E4.\n\uD06C\uACE0 \uD2B9\uBCC4\uD55C \uC77C\uC774 \uC544\uB2C8\uC5B4\uB3C4 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4. \uC751\uB2F5\uBC1B\uC740 \uAE30\uB3C4, \uC9C0\uCF1C \uC8FC\uC2E0 \uC77C, \uACE0\uB9C8\uC6B4 \uC0AC\uB78C, Vaaz\uC73C\uB85C \uBD99\uB4DC\uC2E0 \uC21C\uAC04\uC744 \uC801\uC5B4 \uC8FC\uC138\uC694.\n\uAE30\uB85D\uD55C \uAC10\uC0AC\uB294 Hasat Şükranı\uC8FC\uC77C\uC5D0 \uD568\uAED8 \uD558\uB098\uB2D8\uAED8 \uC62C\uB824 \uB4DC\uB9BD\uB2C8\uB2E4.",
+      intro: "Bu yıl hayatımıza verilen Tanrı lütfunu her ay hatırlayarak kaydedelim.\nBüyük ya da özel olaylar olmak zorunda değil. Yanıt bulan dualar, korunduğunuz anlar, minnettar olduğunuz kişiler ve Vaaz'da tutunduğunuz anı yazın.\nKaydettiğiniz şükranlar Hasat Şükranı Pazarı'nda Tanrı'ya birlikte sunulacaktır.",
       items: items.join("\n")
     };
   }
   if (name === "newyear") {
     return {
-      title: "".concat(y, " Yılbaşı \uAC10\uC0AC\uC640 \uACB0\uB2E8"),
+      title: "".concat(y, " Yılbaşı Şükran ve Karar"),
       navLabel: "Yılbaşı",
       icon: "fa-calendar-check",
       deadline: "".concat(y, "-12-31"),
-      intro: "\uD55C \uD574\uB97C \uBCF4\uB0B4\uBA70 \uD558\uB098\uB2D8\uAED8\uC11C \uD589\uD558\uC2E0 \uC77C\uC744 \uAE30\uC5B5\uD558\uACE0, \uC0C8\uD574\uB97C \uD5A5\uD55C \uBBFF\uC74C\uC758 \uACB0\uB2E8\uC744 \uAE30\uB85D\uD574 \uBD05:00\uB2E4.\n\uAE30\uB85D\uD55C \uACE0\uBC31\uC740 Yılbaşı \uC608\uBC30\uC5D0 \uD568\uAED8 \uC62C\uB824 \uB4DC\uB9BD\uB2C8\uB2E4.",
+      intro: "Yılı geride bırakırken Tanrı'nın yaptıklarını hatırlayalım ve yeni yıla dair imani kararlarımızı kaydedelim.\nKaydettiğiniz itiraflar Yılbaşı ibadetinde birlikte sunulacaktır.",
       items: [
-        "\uC62C\uD574 \uAC00\uC7A5 \uD070 \uC740\uD61C | \uC62C \uD55C \uD574 \uC78A\uC744 \uC218 \uC5C6\uB294 \uD558\uB098\uB2D8\uC758 \uC740\uD61C",
-        "\uAC10\uC0AC\uD55C \uC0AC\uB78C | \uC62C \uD55C \uD574 \uB098\uB97C \uD488\uC5B4 \uC900 \uC0AC\uB78C\uACFC \uADF8 \uC774\uC720",
-        "\uB0B4\uB824\uB193\uC744 \uAC83 | \uD68C\uAC1C\uD558\uBA70 \uC8FC\uB2D8\uAED8 \uB9E1\uACA8 \uB4DC\uB9B4 \uC2B5\uAD00\uACFC \uB9C8\uC74C",
-        "\uC0C8\uD574 \uBD99\uB4E4 Vaaz | \uC0C8\uD574\uC5D0 \uBD99\uB4E4\uACE0 \uC2F6\uC740 Vaaz \uAD6C\uC808",
-        "\uC0C8\uD574 \uACB0\uB2E8 | \uD558\uB098\uB2D8 \uB098\uB77C\uB97C \uC0B4\uAE30 \uC704\uD55C \uAD6C\uCCB4\uC801\uC778 \uACB0\uB2E8 \uD55C \uAC00\uC9C0",
-        "\uC0C8\uD574 \uAE30\uB3C4\uC81C\uBAA9 | \uB098\uC640 \uAC00\uC815, \uBAA9\uC7A5, \uAD50\uD68C\uB97C \uC704\uD55C \uAE30\uB3C4\uC81C\uBAA9"
+        "Bu yılın en büyük lütfu | Bu yıl unutamadığınız Tanrı lütfu",
+        "Minnettar olduğum kişi | Bu yıl beni kucaklayan kişi ve nedeni",
+        "Bırakılacak olan | Tövbe ederek Rab'be teslim edeceğiniz alışkanlık ve yürek",
+        "Yeni yılda tutunacağınız Vaaz | Tutunmak istediğiniz Vaaz ayeti",
+        "Yeni yıl kararı | Tanrı Krallığı'nı yaşamak için somut bir karar",
+        "Yeni yıl dua konusu | Ben, aile, küçük grup ve kilise için dua konuları"
       ].join("\n")
     };
   }
-  return { title: "", navLabel: "\uD2B9\uBCC4\uAE30\uB85D", icon: "fa-hand-holding-heart", deadline: "", intro: "", items: "" };
+  return { title: "", navLabel: "Özel Kayıt", icon: "fa-hand-holding-heart", deadline: "", intro: "", items: "" };
 }
 function parseSpecialItems(text) {
   return String(text || "").split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
@@ -2826,7 +2826,7 @@ function specialConfig() {
 function formatKoreanDate(d) {
   const t = parseDateSafe(d);
   if (isNaN(t)) return d;
-  return "".concat(t.getMonth() + 1, "\uC6D4 ").concat(t.getDate(), "\uC77C(").concat("\uC77C\uC6D4\uD654\uC218\uBAA9\uAE08\uD1A0"[t.getDay()], ")");
+  return "".concat(t.getMonth() + 1, "/").concat(t.getDate(), " (").concat(["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"][t.getDay()], ")");
 }
 function nowStamp() {
   const n = /* @__PURE__ */ new Date(), p = (v) => String(v).padStart(2, "0");
@@ -2857,7 +2857,7 @@ function saveSpecialConfig(field, value) {
 function applySpecialPreset(name) {
   const c = specialConfig();
   const label = { harvest: "Hasat Şükranı", newyear: "Yılbaşı", blank: "Boş" }[name];
-  if ((c.items || c.title) && !confirm("\uD604\uC7AC \uAE30\uB85D \uC591\uC2DD\uC744 '".concat(label, "' \uC591\uC2DD\uC73C\uB85C \uBC14\uAFB8\uACE0 \uC0C8 \uAE30\uB85D\uC73C\uB85C \uC2DC\uC791\uD560\uAE4C\uC694?\n(\uCF1C\uAE30/\uB044\uAE30 \uC0C1\uD0DC\uB294 \uADF8\uB300\uB85C \uC720\uC9C0\uB429\uB2C8\uB2E4)"))) return;
+  if ((c.items || c.title) && !confirm("Mevcut kayıt biçimi '".concat(label, "' biçimine çevrilip yeni kayıtla başlatılsın mı?\n(Açık/kapalı durumu korunur)"))) return;
   store.specialRecord = { ...c, ...specialPreset(name), id: "sr" + Date.now() };
   saveToStorage("specialRecord");
   renderSpecialAdmin();
@@ -2887,7 +2887,7 @@ function persistSpecialDraft() {
   const t = document.getElementById("specialSavedText");
   if (t) {
     const n = /* @__PURE__ */ new Date();
-    t.textContent = "\uC784:00 \uC800\uC7A5\uB428 \xB7 ".concat(n.getHours(), ":").concat(String(n.getMinutes()).padStart(2, "0"));
+    t.textContent = "Taslak kaydedildi \xB7 ".concat(n.getHours(), ":").concat(String(n.getMinutes()).padStart(2, "0"));
   }
 }
 window.addEventListener("pagehide", persistSpecialDraft);
@@ -2907,7 +2907,7 @@ function writeSpecialSubmissions(list) {
 function markSpecialSent() {
   if (readSheetOutbox().some((i) => {
     var _a2;
-    return ((_a2 = i.payload) == null ? void 0 : _a2.type) === "\uD2B9\uBCC4\uAE30\uB85D";
+    return ((_a2 = i.payload) == null ? void 0 : _a2.type) === "특별기록";
   })) return;
   const list = readSpecialSubmissions();
   if (list.some((i) => i.status === "queued")) writeSpecialSubmissions(list.map((i) => ({ ...i, status: "sent" })));
@@ -3038,7 +3038,7 @@ function applySpecialViewOnly() {
   if (vo) {
     const st = document.getElementById("specialStatus");
     const mine = readSpecialSubmissions().find((x) => x.recordId === specialConfig().id);
-    st.textContent = "\uD83D\uDCD6 \uAE30\uB85D \uBC1B\uAE30\uB294 \uB9C8\uCCE4\uC2B5\uB2C8\uB2E4. \uB0B4\uAC00 \uB0A8\uAE34 \uAE30\uB85D\uC740 \uC5B8\uC81C\uB4E0 \uC5EC\uAE30\uC11C \uB2E4:00 \uBCFC \uC218 \uC788\uC2B5\uB2C8\uB2E4." + (mine ? "\n(" + mine.date.slice(5, 16) + " Gönder)" : "");
+    st.textContent = "\uD83D\uDCD6 Kayıt alma tamamlandı. Bıraktığınız kayıtları buradan istediğiniz zaman görebilirsiniz." + (mine ? "\n(" + mine.date.slice(5, 16) + " Gönder)" : "");
     st.style.whiteSpace = "pre-wrap";
     st.style.display = "block";
   }
@@ -3057,19 +3057,19 @@ function renderSpecialRecord() {
   });
   const homeBtn = document.getElementById("specialRecordHomeBtn");
   homeBtn.style.display = on ? "flex" : "none";
-  document.getElementById("specialRecordHomeText").textContent = c.title || "\uC740\uD61C \uAE30\uB85D";
-  document.getElementById("specialRecordHomeSub").textContent = "Şimdi Yaz" + (c.deadline ? " \xB7 ".concat(formatKoreanDate(c.deadline), "\uAE4C\uC9C0") : "");
-  document.getElementById("specialPanelTitle").textContent = c.title || "\uC740\uD61C \uAE30\uB85D";
+  document.getElementById("specialRecordHomeText").textContent = c.title || "Lütuf Kaydı";
+  document.getElementById("specialRecordHomeSub").textContent = "Şimdi Yaz" + (c.deadline ? " \xB7 ".concat(formatKoreanDate(c.deadline), "'e kadar") : "");
+  document.getElementById("specialPanelTitle").textContent = c.title || "Lütuf Kaydı";
   const notes = [];
-  notes.push(on ? "\u2705 \uAE30\uB85D \uBC1B\uAE30\uAC00 \uCF1C\uC838 \uC788\uC2B5\uB2C8\uB2E4. Dağıtım \uD30C\uC77C\uC744 \uC62C\uB824\uC57C \uC131\uB3C4\uB2D8\uB4E4\uAED8 \uBC18\uC601\uB429\uB2C8\uB2E4." : "⏸ Kayıt alma kapalı. Bu ekran yönetici önizlemesidir.");
-  if (!(store.globalWebhook || "").trim()) notes.push("\u26A0\uFE0F \uAD6C\uAE00 \uC2DC\uD2B8 \uC5F0\uB3D9 \uC8FC\uC18C\uAC00 \uBE44\uC5B4 \uC788\uC5B4 Gönder \uB0B4\uC6A9\uC774 \uC804\uB2EC\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4. (\uB9C8\uB4DC\uACE0 \uD0ED\uC5D0\uC11C \uC124\uC815)");
+  notes.push(on ? "\u2705 Kayıt alma açık. Cemaate yansıması için Dağıtım dosyasını yüklemeniz gerekir." : "⏸ Kayıt alma kapalı. Bu ekran yönetici önizlemesidir.");
+  if (!(store.globalWebhook || "").trim()) notes.push("\u26A0\uFE0F Google Sheets bağlantı adresi boş olduğu için Gönder içeriği iletilmiyor. (Küçük Grup sekmesinden ayarlayın)");
   document.getElementById("specialAdminNotice").textContent = notes.join("\n");
   document.getElementById("specialAdminNotice").style.whiteSpace = "pre-wrap";
   const dl = document.getElementById("specialDeadline");
   if (c.deadline) {
     const end = parseDateSafe(c.deadline);
     end.setHours(23, 59, 59);
-    dl.textContent = /* @__PURE__ */ new Date() > end ? "Gönder \uAE30\uD55C(".concat(formatKoreanDate(c.deadline), ")\uC774 \uC9C0\uB0AC\uC9C0\uB9CC \uC544\uC9C1 Gönder\uD558\uC2E4 \uC218 \uC788\uC2B5\uB2C8\uB2E4") : "Gönder \uAE30\uD55C \xB7 ".concat(formatKoreanDate(c.deadline), "\uAE4C\uC9C0");
+    dl.textContent = /* @__PURE__ */ new Date() > end ? "Gönder (son tarih: ".concat(formatKoreanDate(c.deadline), ") geçti, ama hâlâ Gönder edebilirsiniz") : "Son tarih \xB7 ".concat(formatKoreanDate(c.deadline), "'e kadar");
     dl.style.display = "inline-block";
   } else dl.style.display = "none";
   const intro = document.getElementById("specialIntro");
@@ -3107,10 +3107,10 @@ function updateSpecialProgress() {
   const filled = fields.filter((f) => f.text).length;
   fields.forEach((f, i) => {
     const el = document.getElementById("sr-done-" + i);
-    if (el) el.textContent = f.text ? "\u2713 \uC791\uC131" : "";
+    if (el) el.textContent = f.text ? "\u2713 Yazılan" : "";
   });
   document.getElementById("specialProgressBar").style.width = fields.length ? Math.round(filled / fields.length * 100) + "%" : "0%";
-  document.getElementById("specialProgressText").textContent = fields.length ? "".concat(fields.length, "\uAC1C \uD56D\uBAA9 \uC911 ").concat(filled, " madde yazıldı") : "";
+  document.getElementById("specialProgressText").textContent = fields.length ? "".concat(fields.length, "maddeden ").concat(filled, " madde yazıldı") : "";
   return { filled, total: fields.length, fields };
 }
 function onSpecialInput() {
@@ -3127,7 +3127,7 @@ function onSpecialInput() {
   specialSaveTimer = setTimeout(persistSpecialDraft, 500);
 }
 function specialAsText(c, author, mokjang, fields) {
-  return ["[".concat(c.title || "\uC740\uD61C \uAE30\uB85D", "]"), "İsim: ".concat(author).concat(mokjang ? " / " + mokjang : ""), ""].concat(fields.filter((f) => f.text).map((f) => "\u25A0 ".concat(f.label, "\n").concat(f.text, "\n"))).join("\n").trim();
+  return ["[".concat(c.title || "Lütuf Kaydı", "]"), "İsim: ".concat(author).concat(mokjang ? " / " + mokjang : ""), ""].concat(fields.filter((f) => f.text).map((f) => "\u25A0 ".concat(f.label, "\n").concat(f.text, "\n"))).join("\n").trim();
 }
 function specialEntryId(recordId) {
   const prev = readSpecialSubmissions().find((s) => s.recordId === recordId && s.entryId);
@@ -3180,10 +3180,10 @@ async function submitSpecialRecord() {
     return;
   }
   if (!filled) {
-    alert("\uD55C \uD56D\uBAA9 \uC774\uC0C1 \uAE30\uB85D\uD55C \uB4A4 Gönder\uD574 \uC8FC\uC138\uC694.");
+    alert("En az bir madde yazdıktan sonra Gönder'e basın.");
     return;
   }
-  if (filled < total && !confirm("".concat(total, "\uAC1C \uD56D\uBAA9 \uC911 ").concat(total - filled, "\uAC1C\uAC00 \uC544\uC9C1 \uBE44\uC5B4 \uC788\uC2B5\uB2C8\uB2E4.\n\uC774\uB300\uB85C Gönder\uD558:00\uACA0\uC2B5\uB2C8\uAE4C? (\uB098\uC911\uC5D0 \uCC44\uC6CC\uC11C \uB2E4:00 Gönder\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4)"))) return;
+  if (filled < total && !confirm("".concat(total, "maddeden ").concat(total - filled, " tane boş bırakıldı.\nBöyle Gönder edilsin mi? (Sonra doldurup yeniden Gönder edebilirsiniz)"))) return;
   if (isAdminMode && !c.enabled && !confirm("Yönetici önizleme modundasınız. Google E-Tabloya gerçekten gönderilsin mi?")) return;
   persistSpecialDraft();
   bulletinStorage.setItem("dasibon_specialLastAuthor", author);
@@ -3191,16 +3191,16 @@ async function submitSpecialRecord() {
   const resubmit = mine.some((s) => s.recordId === c.id);
   const entryId = specialEntryId(c.id);
   const stamp = nowStamp();
-  setSpecialBusy(true, resubmit ? "\uC218\uC815 \uB0B4\uC6A9\uC744 \uBCF4\uB0B4\uB294 \uC911\u2026" : "Gönder\uD558\uB294 \uC911\u2026");
+  setSpecialBusy(true, resubmit ? "Düzenleme gönderiliyor\u2026" : "Gönderiliyor\u2026");
   const result = await sendToGoogleSheet({
-    type: "\uD2B9\uBCC4\uAE30\uB85D",
+    type: "특별기록",
     action: "save",
     entryId,
     recordId: c.id || "",
-    recordTitle: c.title || "\uC740\uD61C \uAE30\uB85D",
+    recordTitle: c.title || "Lütuf Kaydı",
     author,
     mokjang,
-    submitKind: resubmit ? "\uC218\uC815 Gönder" : "\uCD5C\uCD08 Gönder",
+    submitKind: resubmit ? "Düzenlemeyi Gönder" : "İlk Gönder",
     filled: "".concat(filled, "/").concat(total),
     date: stamp,
     fieldsJson: JSON.stringify(fields),
@@ -3211,12 +3211,12 @@ async function submitSpecialRecord() {
   writeSpecialSubmissions(rest);
   setSpecialBusy(false);
   renderSpecialSubmissions();
-  if (result === "queued") alert("\uC778\uD130\uB137 \uC5F0\uACB0\uC774 \uBD88\uC548\uC815\uD574 \uC774 \uAE30\uAE30\uC5D0 \uBCF4\uAD00\uD574 \uB450\uC5C8\uC2B5\uB2C8\uB2E4.\n\uC5F0\uACB0\uB418\uBA74 \uC790\uB3D9\uC73C\uB85C \uB2E4:00 \uBCF4\uB0B4 \uB4DC\uB9BD\uB2C8\uB2E4.");
-  else alert(resubmit ? "\uACE0\uCE5C \uB0B4\uC6A9\uC73C\uB85C \uBC14\uAFB8\uC5B4 Gönder\uD588\uC2B5\uB2C8\uB2E4." : "\uC740\uD61C\uC758 \uAE30\uB85D\uC774 \uBAA9\uC0AC\uB2D8\uAED8 Gönder\uB418\uC5C8\uC2B5\uB2C8\uB2E4.\n\uC5B8\uC81C\uB4E0 \uACE0\uCCD0\uC11C \uB2E4:00 Gönder\uD558\uAC70\uB098 \uC0AD\uC81C\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.");
+  if (result === "queued") alert("İnternet bağlantısı kararsız olduğu için bu cihazda saklandı.\nBağlantı kurulunca otomatik olarak yeniden gönderilecek.");
+  else alert(resubmit ? "Düzenlenen içerikle Gönder edildi." : "Kayıt Baş Papaz'a Gönder edildi.\nİstediğiniz zaman düzenleyip yeniden Gönder edebilir veya silebilirsiniz.");
 }
 function editSpecialRecord() {
   if (specialBusy) return;
-  specialToast("\uC791\uC131 \uCE78\uC73C\uB85C \uC774\uB3D9\uD569\uB2C8\uB2E4. \uACE0\uCE5C \uB4A4 \uC544\uB798 \uBC84\uD2BC\uC744 \uB20C\uB7EC \uC8FC\uC138\uC694.");
+  specialToast("Yazma alanına geçiliyor. Düzenledikten sonra aşağıdaki butona basın.");
   const first = document.querySelector("#specialFieldsArea textarea");
   const target = first || document.getElementById("input-srAuthor");
   {
@@ -3239,16 +3239,16 @@ async function deleteSpecialRecord() {
   const entry = mine.find((s) => s.recordId === c.id);
   if (!entry) return;
   if (specialBusy) return;
-  if (!confirm("Gönder\uD55C \uAE30\uB85D\uC744 \uC0AD\uC81C\uD558:00\uACA0\uC2B5\uB2C8\uAE4C?\n\uBAA9\uC0AC\uB2D8\uAED8 \uC804\uB2EC\uB41C \uAE30\uB85D\uACFC \uC774 \uAE30\uAE30\uC5D0 \uC791\uC131\uD574 \uB454 \uB0B4\uC6A9\uC774 \uBAA8\uB450 \uC9C0\uC6CC\uC9D1\uB2C8\uB2E4.")) return;
+  if (!confirm("Gönder edilen kayıt silinsin mi?\nBaş Papaz'a iletilen kayıt ve bu cihazdaki içerik tamamen silinir.")) return;
   setSpecialBusy(true, "Siliniyor…");
   const delBtn = [...document.querySelectorAll("#specialMySubmissions button")].pop();
   if (delBtn) delBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Siliniyor…';
   const result = await sendToGoogleSheet({
-    type: "\uD2B9\uBCC4\uAE30\uB85D",
+    type: "특별기록",
     action: "delete",
     entryId: entry.entryId || "",
     recordId: c.id || "",
-    recordTitle: c.title || "\uC740\uD61C \uAE30\uB85D",
+    recordTitle: c.title || "Lütuf Kaydı",
     author: entry.author,
     date: nowStamp()
   });
@@ -3259,21 +3259,21 @@ async function deleteSpecialRecord() {
   specialSignature = "";
   setSpecialBusy(false);
   renderSpecialRecord();
-  alert(result === "queued" ? "Silme isteği kaydedildi. İnternet bağlantısında otomatik işlenir." : "Gönder\uD55C \uAE30\uB85D\uC744 \uC0AD\uC81C\uD588\uC2B5\uB2C8\uB2E4.");
+  alert(result === "queued" ? "Silme isteği kaydedildi. İnternet bağlantısında otomatik işlenir." : "Gönder edilen kayıt silindi.");
 }
 function renderSpecialSubmissions() {
   const c = specialConfig();
   const list = readSpecialSubmissions().filter((s) => s.recordId === c.id);
   const status = document.getElementById("specialStatus");
   const submitBtn = document.getElementById("specialSubmitBtn");
-  if (submitBtn) submitBtn.textContent = list[0] ? "\uACE0\uCE5C \uB0B4\uC6A9\uC73C\uB85C \uB2E4:00 Gönder" : "Gönder";
+  if (submitBtn) submitBtn.textContent = list[0] ? "Düzenlemeyle yeniden Gönder" : "Gönder";
   if (list[0]) {
     const s = list[0];
-    status.textContent = s.status === "queued" ? "\u23F3 ".concat(s.date.slice(5, 16), " Gönder\uBD84\uC774 Gönderim Bekliyor \uC911\uC785\uB2C8\uB2E4. \uC778\uD130\uB137\uC5D0 \uC5F0\uACB0\uB418\uBA74 \uC790\uB3D9\uC73C\uB85C \uBCF4\uB0B4\uC9D1\uB2C8\uB2E4.") : "\u2705 ".concat(s.date.slice(5, 16), "\uC5D0 Gönder\uD588\uC2B5\uB2C8\uB2E4 (").concat(s.total, "\uAC1C \uC911 ").concat(s.filled, "\uAC1C). \uC544\uB798\uC5D0\uC11C \uACE0\uCE58\uAC70\uB098 \uC0AD\uC81C\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.");
+    status.textContent = s.status === "queued" ? "\u23F3 ".concat(s.date.slice(5, 16), " Gönderim bekleyen kayıt var. İnternete bağlanınca otomatik gönderilir.") : "\u2705 ".concat(s.date.slice(5, 16), "tarihinde Gönder edildi (").concat(s.total, "/ ").concat(s.filled, "adet). Aşağıdan düzenleyebilir veya silebilirsiniz.");
     status.style.display = "block";
   } else status.style.display = "none";
   const area = document.getElementById("specialMySubmissions");
-  area.innerHTML = list.length ? list.map((s) => '\n            <div class="item-row" style="margin-bottom:8px;">\n                <div class="row-author">'.concat(escapeHtml(s.date), " \xB7 ").concat(escapeHtml(s.author), '</div>\n                <div class="row-content">').concat(escapeHtml(s.title || ""), " \u2014 ").concat(s.total, "\uAC1C \uC911 ").concat(s.filled, " madde yazıldı ").concat(s.status === "queued" ? "(Gönderim Bekliyor)" : "(Gönder \uC644\uB8CC)", '</div>\n                <div style="display:flex; gap:8px; margin-top:10px;">\n                    <button onclick="editSpecialRecord()" class="action-btn" style="flex:1; padding:10px; background:#EDF2F7; color:var(--primary-navy); font-size:13px;"><i class="fa-solid fa-pen"></i> Düzenle</button>\n                    <button onclick="deleteSpecialRecord()" class="action-btn" style="flex:1; padding:10px; background:#FED7D7; color:#9B2C2C; font-size:13px;"><i class="fa-solid fa-trash-can"></i> Sil</button>\n                </div>\n            </div>')).join("") : '<p style="text-align:center; padding:16px; color:#a0aec0; font-size:12px;">\uC544\uC9C1 Gönder\uD55C \uAE30\uB85D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.</p>';
+  area.innerHTML = list.length ? list.map((s) => '\n            <div class="item-row" style="margin-bottom:8px;">\n                <div class="row-author">'.concat(escapeHtml(s.date), " \xB7 ").concat(escapeHtml(s.author), '</div>\n                <div class="row-content">').concat(escapeHtml(s.title || ""), " \u2014 ").concat(s.total, "/ ").concat(s.filled, " madde yazıldı ").concat(s.status === "queued" ? "(Gönderim Bekliyor)" : "(Gönder tamamlandı)", '</div>\n                <div style="display:flex; gap:8px; margin-top:10px;">\n                    <button onclick="editSpecialRecord()" class="action-btn" style="flex:1; padding:10px; background:#EDF2F7; color:var(--primary-navy); font-size:13px;"><i class="fa-solid fa-pen"></i> Düzenle</button>\n                    <button onclick="deleteSpecialRecord()" class="action-btn" style="flex:1; padding:10px; background:#FED7D7; color:#9B2C2C; font-size:13px;"><i class="fa-solid fa-trash-can"></i> Sil</button>\n                </div>\n            </div>')).join("") : '<p style="text-align:center; padding:16px; color:#a0aec0; font-size:12px;">Henüz Gönder edilmiş kayıt yok.</p>';
 }
 function copySpecialRecord() {
   var _a2;
@@ -3301,11 +3301,11 @@ function copySpecialRecord() {
 const SEASONS = {
   ordinary: { label: "Olağan Zaman", en: "ORDINARY TIME", tag: "Günlük hayatta Tanrı'nın krallığını yaşama zamanı", motif: "leaf" },
   advent: { label: "Advent", en: "ADVENT", tag: "Gelecek olan Rab'bi bekleme mevsimi", motif: "star" },
-  christmas: { label: "Noel", en: "CHRISTMAS", tag: "Vaaz\uC774 \uC721\uC2E0\uC774 \uB418\uC5B4 \uC6B0\uB9AC \uAC00\uC6B4\uB370", motif: "star" },
+  christmas: { label: "Noel", en: "CHRISTMAS", tag: "Söz et oldu ve aramızda yaşadı", motif: "star" },
   lent: { label: "Paskalya Orucu", en: "LENT", tag: "Çarmıh yolunda birlikte yürünen 40 gün", motif: "cross" },
   holyweek: { label: "Keder Haftası", en: "HOLY WEEK", tag: "Bizim için acı çeken Rab", motif: "cross" },
-  easter: { label: "Paskalya", en: "EASTER", tag: "\uB2E4:00 \uC0AC\uC2E0 \uC8FC\uB2D8\uACFC \uD568\uAED8", motif: "sun" },
-  pentecost: { label: "Pentikost", en: "PENTECOST", tag: "\uBD88\uAC19\uC774 \uC784\uD558:00\uB294 \uC131\uB839", motif: "flame" },
+  easter: { label: "Paskalya", en: "EASTER", tag: "Dirilen Rab ile birlikte", motif: "sun" },
+  pentecost: { label: "Pentikost", en: "PENTECOST", tag: "Ateş gibi inen Kutsal Ruh", motif: "flame" },
   summerharvest: { label: "İlk Hasat Şükranı", en: "FIRST FRUITS", tag: "İlk meyvelerin şükran sunusu", motif: "wheat" },
   harvest: { label: "Hasat Şükranı", en: "HARVEST", tag: "Yılın lütuflarını saydığımız mevsim", motif: "wheat" }
 };
@@ -3525,14 +3525,14 @@ function renderRecordsHub() {
   if (homeBtn) homeBtn.style.setProperty("--p", p.pct + "%");
   const ring = document.getElementById("specialHomeRing");
   if (ring) ring.textContent = p.total ? "".concat(p.filled, "/").concat(p.total) : "";
-  const title = !on && !curMine ? "Geçmiş Kayıt \uBCF4\uAD00\uD568" : c.title || "\uC740\uD61C \uAE30\uB85D";
+  const title = !on && !curMine ? "Geçmiş Kayıt arşivi" : c.title || "Lütuf Kaydı";
   document.querySelectorAll("[data-sr-title]").forEach((el) => el.textContent = title);
-  const sub = "".concat(p.total, "\uAC1C \uC911 ").concat(p.filled, " madde yazıldı") + (c.deadline ? " \xB7 ".concat(formatKoreanDate(c.deadline), "\uAE4C\uC9C0") : "");
-  document.querySelectorAll("[data-sr-sub]").forEach((el) => el.textContent = on ? sub : curMine ? "\uAE30\uB85D \uBC1B\uAE30 \uC885\uB8CC \xB7 \uB0B4 \uAE30\uB85D \uBCF4\uAE30" : "\uB0B4\uAC00 \uB0A8\uAE34 Geçmiş Kayıt \uBCF4\uAE30");
+  const sub = "".concat(p.total, "/ ").concat(p.filled, " madde yazıldı") + (c.deadline ? " \xB7 ".concat(formatKoreanDate(c.deadline), "'e kadar") : "");
+  document.querySelectorAll("[data-sr-sub]").forEach((el) => el.textContent = on ? sub : curMine ? "Kayıt alma kapandı \xB7 Kayıtlarım" : "Bıraktığım kayıtları gör");
   const hc = document.getElementById("hubHistCount");
-  if (hc) hc.textContent = "\uB0A0\uC9DC\uBCC4\uB85C \uBCF4\uAE30";
+  if (hc) hc.textContent = "Tarihe göre görüntüle";
   const mc = document.getElementById("hubConfCount");
-  if (mc) mc.innerHTML = '\uC624\uB298 \uBC1B\uC740 \uC740\uD61C\uC640<br><span class="nw">Dua Konusu</span>';
+  if (mc) mc.innerHTML = 'Bugün aldığım lütuf ve<br><span class="nw">Dua Konusu</span>';
 }
 const RECORD_TABS = ["records", "bulletin", "confession", "cell", "visitation", "gratitude"];
 function syncBottomNav(tabId) {
