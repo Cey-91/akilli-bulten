@@ -1,11 +1,11 @@
 /* Dasibon bulletin worker, 2026-11-03 (fast-open, Safari 12 compatible). Keep this URL stable. */
 const ROOT = new URL("./", self.registration.scope);
 const HOME = new URL("index.html", ROOT).href;
-const CACHE = "dasibon-bulletin-recovery-v1-" + encodeURIComponent(ROOT.pathname);
+const CACHE = "dasibon-bulletin-recovery-v2-" + encodeURIComponent(ROOT.pathname);
 const OWNED = /^(dasibon-bulletin-shell-|dasibon-pwa-engine-)/;
 const ASSETS = ["manifest.json", "logo.jpg", "icon-192.png", "icon-512.png"].map((p) => new URL(p, ROOT).href);
 const EXTERNAL = /* @__PURE__ */ new Set(["fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"]);
-const BUILD = "20261103-fastopen-5";
+const BUILD = "20261127-instagram-6";
 const TIMEOUT = 5e3;
 const FETCH_LIMIT = 9e4;
 const RECENT = 6e4;
