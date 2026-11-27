@@ -1562,7 +1562,8 @@ async function loadBulletinJson() {
     const data = await res.json();
     const weeklyFields = ["bulletinDate","worshipOrder","serviceInfo","biblePassage","bibleHeading",
       "sermonTitle","preacher","summary","questions","churchNews","fridayLink","fridayNotice",
-      "youtubeLink","dosirakLink","shortsLink","musicSheets","badgeEnabled","bulletinHistory"];
+      "youtubeLink","dosirakLink","shortsLink","musicSheets","badgeEnabled","bulletinHistory",
+      "instagramId","adminPassword"];
     weeklyFields.forEach(k => { if (data[k] !== undefined) store[k] = data[k]; });
   } catch(e) { console.warn("bulletin.json load failed, using embedded store:", e); }
 }
@@ -1783,7 +1784,13 @@ function applyChurchInfo() {
 function updateViews() {
   applyChurchInfo();
   document.getElementById("view-worshipOrder").innerHTML = store.worshipOrder ? store.worshipOrder.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>") : "";
-  document.getElementById("view-serviceInfo").innerHTML = store.serviceInfo ? store.serviceInfo.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>") : "";
+  // 예배 정보 + 인스타그램 링크
+  let siHtml = store.serviceInfo ? store.serviceInfo.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>") : "";
+  if (store.instagramId) {
+    const igId = store.instagramId.replace(/^@/, "");
+    siHtml += `<br><a href="https://www.instagram.com/${encodeURIComponent(igId)}/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:6px 12px;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;border-radius:20px;font-size:13px;font-weight:700;text-decoration:none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>@${igId}</a>`;
+  }
+  document.getElementById("view-serviceInfo").innerHTML = siHtml;
   renderNewsText(document.getElementById("view-churchNews"), store.churchNews);
   renderBible();
   if (store.sermonTitle) {
@@ -2426,7 +2433,23 @@ function renderMusicSheets() {
     area.innerHTML = isHistoryView && window.currentSheetsExpired ? '<p style="text-align:center; color:#a0aec0; padding:20px; font-size:13px; line-height:1.6;">\uC774 Bülten\uC758 İlahiler\uB294 \uC815\uB9AC\uB418\uC5C8\uC2B5\uB2C8\uB2E4 (\uCD5C\uADFC \uC608\uBC30 2\uAC1C\uB9CC \uBCF4\uAD00).<br>Kutsal Kitap Metni\uACFC Vaaz Notu\uB294 \uADF8\uB300\uB85C \uBCF4\uC2E4 \uC218 \uC788\uC2B5\uB2C8\uB2E4.</p>' : '<p style="text-align:center; color:#a0aec0; padding:20px; font-size:13px;">\uB4F1\uB85D\uB41C İlahiler\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.</p>';
     return;
   }
-  area.innerHTML = store.musicSheets.map((src, idx) => '\n            <div class="sheet-item">\n                <img loading="lazy" decoding="async" src="'.concat(src, '" onclick="openViewer(').concat(idx, ')">\n                <button class="delete-btn" onclick="deleteMusicSheet(').concat(idx, ')">&times;</button>\n            </div>\n        ')).join("");
+  area.innerHTML = store.musicSheets.map((src, idx) => {
+    // 새 형식: {title, url} 객체 / 구 형식: base64 문자열
+    if (src && typeof src === "object" && src.url) {
+      const isPdf = src.url.match(/\.pdf(\?|$)/i);
+      return `<div class="sheet-item" style="display:flex;align-items:center;gap:12px;padding:14px 16px;min-height:auto;">
+        <span style="font-size:28px;">${isPdf ? "📄" : "🎵"}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:15px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${src.title || "악보"}</div>
+          <div style="font-size:11px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${src.url}</div>
+        </div>
+        <a href="${src.url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:8px 14px;background:var(--primary-navy);color:#fff;border-radius:20px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;">열기 ›</a>
+        <button class="delete-btn admin-only" onclick="deleteMusicSheet(${idx})" style="display:none;">&times;</button>
+      </div>`;
+    }
+    // 구 형식 (base64 이미지)
+    return `<div class="sheet-item"><img loading="lazy" decoding="async" src="${src}" onclick="openViewer(${idx})"><button class="delete-btn" onclick="deleteMusicSheet(${idx})">&times;</button></div>`;
+  }).join("");
 }
 function deleteMusicSheet(idx) {
   if (confirm("İlahiler\uB97C \uC0AD\uC81C\uD558:00\uACA0\uC2B5\uB2C8\uAE4C?")) {
