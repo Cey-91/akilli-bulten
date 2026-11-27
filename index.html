@@ -2497,7 +2497,7 @@ let pdfJsPromise = null;
 function loadPdfJs() {
   if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
   if (pdfJsPromise) return pdfJsPromise;
-  const base = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+  const base = "vendor/"; // pdf.js 3.11.174 (같은 사이트에 보관)
   pdfJsPromise = new Promise((resolve, reject) => {
     const s = document.createElement("script");
     s.src = base + "pdf.min.js";
