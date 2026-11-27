@@ -2510,11 +2510,19 @@ function loadPdfJs() {
   });
   return pdfJsPromise;
 }
+function renderPendingPdfs() {
+  document.querySelectorAll(".pdf-pages").forEach((el) => {
+    if (!el.querySelector("canvas") && !el.dataset.busy) renderPdfPages(el);
+  });
+}
 async function renderPdfPages(el) {
+  if (el.dataset.busy) return;
+  el.dataset.busy = "1";
   const url = el.dataset.pdf;
+  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 15000));
   try {
     const lib = await loadPdfJs();
-    const pdf = await lib.getDocument(url).promise;
+    const pdf = await Promise.race([lib.getDocument(url).promise, timeout]);
     el.innerHTML = "";
     const width = Math.min(el.clientWidth || el.parentElement.clientWidth || 360, 900);
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -2531,8 +2539,17 @@ async function renderPdfPages(el) {
     }
   } catch (e) {
     el.innerHTML = `<a href="${url}" target="_blank" rel="noopener" style="color:#2B6CB0;font-weight:700;">PDF'i aç ›</a>`;
+  } finally {
+    delete el.dataset.busy;
   }
 }
+// 악보 탭을 열 때와 처음 로드 후에 아직 그려지지 않은 PDF를 다시 그림
+const _switchTabBase = switchTab;
+switchTab = function (tabId) {
+  _switchTabBase(tabId);
+  if (tabId === "music") setTimeout(renderPendingPdfs, 50);
+};
+setTimeout(renderPendingPdfs, 3000);
 function deleteMusicSheet(idx) {
   if (confirm("İlahileri silmek istiyor musunuz?")) {
     store.musicSheets.splice(idx, 1);
