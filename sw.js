@@ -5,7 +5,7 @@ const CACHE = "dasibon-bulletin-recovery-v2-" + encodeURIComponent(ROOT.pathname
 const OWNED = /^(dasibon-bulletin-shell-|dasibon-pwa-engine-)/;
 const ASSETS = ["manifest.json", "logo.jpg", "icon-192.png", "icon-512.png"].map((p) => new URL(p, ROOT).href);
 const EXTERNAL = /* @__PURE__ */ new Set(["fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"]);
-const BUILD = "20261128-plan-2027-5";
+const BUILD = "20261128-network-first-6";
 const TIMEOUT = 5e3;
 const FETCH_LIMIT = 9e4;
 const RECENT = 6e4;
@@ -203,16 +203,16 @@ self.addEventListener("fetch", (event) => {
     const savedP = fallback().catch(() => null);
     event.waitUntil(savedP.then((s) => s && Date.now() - lastFresh >= RECENT ? refresh().catch(() => {
     }) : null));
+    // 네트워크 우선: 최신 index.html을 먼저 받고, 실패하거나 느리면 저장본 사용
     event.respondWith((async () => {
+      try {
+        const r = await bounded(refresh(), 8e3);
+        if (r) return r.clone();
+      } catch (_) {
+      }
       const saved = await savedP;
       if (saved) return saved;
-      try {
-        const r = await refresh();
-        if (r) return r.clone();
-        return await fallback() || guidance();
-      } catch (_) {
-        return await fallback() || guidance();
-      }
+      return await fallback() || guidance();
     })());
     return;
   }
