@@ -324,7 +324,7 @@ const TOKEN_KEY    = "admin_panel_token";
 
 // ── 로그인 ─────────────────────────────────────────────
 function getAdminPw() {
-  return localStorage.getItem(ADMIN_PW_KEY) || "admin1234";
+  return localStorage.getItem(ADMIN_PW_KEY) || "gorkem0191";
 }
 function doLogin() {
   const pw = document.getElementById("pwInput").value;
@@ -494,7 +494,7 @@ async function saveBulletin() {
       friday:  document.getElementById("f_badge_friday").checked
     },
     bulletinHistory: history,
-    adminPassword: (document.getElementById("cfg_newPw").value.trim()) || (localStorage.getItem(ADMIN_PW_KEY) || "admin1234")
+    adminPassword: (document.getElementById("cfg_newPw").value.trim()) || (localStorage.getItem(ADMIN_PW_KEY) || "gorkem0191")
   };
 
   // 새 Şifre girin됐으면 localStorage도 업데이트
