@@ -2196,7 +2196,9 @@ const SESSIZ_ZAMAN_PLAN = (function() {
     { ad: "Efesliler", bolumSayisi: 6, baslangic: 1 },
     { ad: "Filipililere", bolumSayisi: 4, baslangic: 1 },
     { ad: "Koloseliler", bolumSayisi: 4, baslangic: 1 },
-    { ad: "Vahiy", bolumSayisi: 22, baslangic: 1 }
+    { ad: "Vahiy", bolumSayisi: 22, baslangic: 1 },
+    { ad: "Mezmurlar", bolumSayisi: 150, baslangic: 1 },
+    { ad: "Süleyman'ın Meselleri", bolumSayisi: 31, baslangic: 1 }
   ];
   // Başlangıç: 2026-11-24 = index 0
   const BASLANGIC = new Date(2026, 10, 24); // ay 0-indexed: 10 = Kasım
@@ -2301,7 +2303,9 @@ const SZ_BOOK_INFO = {
   "Efesliler": { code: "EPH", kisa: "Efe" },
   "Filipililere": { code: "PHP", kisa: "Fil" },
   "Koloseliler": { code: "COL", kisa: "Kol" },
-  "Vahiy": { code: "REV", kisa: "Vah" }
+  "Vahiy": { code: "REV", kisa: "Vah" },
+  "Mezmurlar": { code: "PSA", kisa: "Mez" },
+  "Süleyman'ın Meselleri": { code: "PRO", kisa: "Mes" }
 };
 function szBibleUrl(item) {
   const info = SZ_BOOK_INFO[item.kitapAd];

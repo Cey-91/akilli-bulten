@@ -5,7 +5,7 @@ const CACHE = "dasibon-bulletin-recovery-v2-" + encodeURIComponent(ROOT.pathname
 const OWNED = /^(dasibon-bulletin-shell-|dasibon-pwa-engine-)/;
 const ASSETS = ["manifest.json", "logo.jpg", "icon-192.png", "icon-512.png"].map((p) => new URL(p, ROOT).href);
 const EXTERNAL = /* @__PURE__ */ new Set(["fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"]);
-const BUILD = "20261128-tcl02-4";
+const BUILD = "20261128-plan-2027-5";
 const TIMEOUT = 5e3;
 const FETCH_LIMIT = 9e4;
 const RECENT = 6e4;
