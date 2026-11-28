@@ -2289,24 +2289,24 @@ function saveSessizNote(tarihStr, val) {
 
 // Sessiz Zaman takvimi: her gün için okunacak bölüm ve İncil metni bağlantısı
 const SZ_BOOK_INFO = {
-  "Matta": { en: "Matthew", kisa: "Mat" },
-  "Markos": { en: "Mark", kisa: "Mar" },
-  "Luka": { en: "Luke", kisa: "Luk" },
-  "Yuhanna": { en: "John", kisa: "Yuh" },
-  "Elçilerin İşleri": { en: "Acts", kisa: "Elç" },
-  "Romalılar": { en: "Romans", kisa: "Rom" },
-  "1. Korintliler": { en: "1Corinthians", kisa: "1Ko" },
-  "2. Korintliler": { en: "2Corinthians", kisa: "2Ko" },
-  "Galatyalılar": { en: "Galatians", kisa: "Gal" },
-  "Efesliler": { en: "Ephesians", kisa: "Efe" },
-  "Filipililere": { en: "Philippians", kisa: "Fil" },
-  "Koloseliler": { en: "Colossians", kisa: "Kol" },
-  "Vahiy": { en: "Revelation", kisa: "Vah" }
+  "Matta": { code: "MAT", kisa: "Mat" },
+  "Markos": { code: "MRK", kisa: "Mar" },
+  "Luka": { code: "LUK", kisa: "Luk" },
+  "Yuhanna": { code: "JHN", kisa: "Yuh" },
+  "Elçilerin İşleri": { code: "ACT", kisa: "Elç" },
+  "Romalılar": { code: "ROM", kisa: "Rom" },
+  "1. Korintliler": { code: "1CO", kisa: "1Ko" },
+  "2. Korintliler": { code: "2CO", kisa: "2Ko" },
+  "Galatyalılar": { code: "GAL", kisa: "Gal" },
+  "Efesliler": { code: "EPH", kisa: "Efe" },
+  "Filipililere": { code: "PHP", kisa: "Fil" },
+  "Koloseliler": { code: "COL", kisa: "Kol" },
+  "Vahiy": { code: "REV", kisa: "Vah" }
 };
 function szBibleUrl(item) {
   const info = SZ_BOOK_INFO[item.kitapAd];
   if (!info) return "";
-  return "https://www.bibleserver.com/TR/" + info.en + item.bolumNo;
+  return "https://www.bible.com/tr/bible/170/" + info.code + "." + item.bolumNo + ".TCL02";
 }
 let szCalMonth = null;
 function szCalDateStr(d) {
@@ -2371,7 +2371,7 @@ function renderSessizCalendar() {
       ${dayNames.map(n => `<div style="text-align:center;font-size:11px;font-weight:700;color:var(--text-muted);">${n}</div>`).join("")}
     </div>
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">${cells}</div>
-    <p style="font-size:11px;color:var(--text-muted);margin:10px 0 0;line-height:1.5;">Tarihe dokunarak o günün Kutsal Kitap bölümünü açın. Çeviri: Kutsal Kitap Yeni Çeviri (2001, 2008).</p>
+    <p style="font-size:11px;color:var(--text-muted);margin:10px 0 0;line-height:1.5;">Tarihe dokunarak o günün Kutsal Kitap bölümünü açın. Çeviri: Türkçe Çeviri Kutsal Kitap (TCL02).</p>
   </div>`;
 }
 
